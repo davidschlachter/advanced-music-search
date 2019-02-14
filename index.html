@@ -18,19 +18,31 @@
 		
 		
 		<script>
+			const mm = require('music-metadata')
+			
 			document.addEventListener('drop', function (e) {
 		    e.preventDefault()
 		    e.stopPropagation()
 		    for (let f of e.dataTransfer.files) {
-		      console.log('File(s) you dragged here: ', f.path)
 					let filelist = new Array()
 					walkSync(f.path, filelist)
 					console.log(filelist)
+					for (let i = 0; i < filelist.length; i++) {
+						if (filelist[i].includes(".m4a") || filelist[i].includes(".mp4")) {
+							mm.parseFile(filelist[i], {native: true})
+							  .then( metadata => {
+							    console.log(metadata);
+							  })
+							  .catch( err => {
+							    console.error(err.message);
+							  });
+						}
+					}
 		    }
 		  })
 		  document.addEventListener('dragover', function (e) {
-		    e.preventDefault();
-		    e.stopPropagation();
+		    e.preventDefault()
+		    e.stopPropagation()
 		  });
 			
 			// List all files in a directory in Node.js recursively in a synchronous fashion

@@ -11,5 +11,8 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^4.0.4"
+  },
+  "dependencies": {
+    "music-metadata": "^3.5.2"
   }
 }
