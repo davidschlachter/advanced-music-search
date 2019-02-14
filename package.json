@@ -1,0 +1,11 @@
+{
+  "name": "advanced-music-search",
+  "version": "0.0.1",
+  "description": "Advanced search and filtering for music libraries",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "David Schlachter",
+  "license": "MIT"
+}
