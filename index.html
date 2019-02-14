@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+		<style>
+			#holder {width:300px;height:120px;background-color:#d0d0ff;border-radius:12px;font-size: 64px;    text-align: center;line-height: 120px;margin: 0 auto;}
+			body {text-align: center;}
+		</style>
+  </head>
+  <body>
+    <h1>advanced-music-search</h1>
+		
+		<p>Drop your music folder here to get started:</p>
+		<div id="holder">
+		  🎶
+		</div>
+		
+		
+		<script>
+			document.addEventListener('drop', function (e) {
+		    e.preventDefault()
+		    e.stopPropagation()
+		    for (let f of e.dataTransfer.files) {
+		      console.log('File(s) you dragged here: ', f.path)
+					let filelist = new Array()
+					walkSync(f.path, filelist)
+					console.log(filelist)
+		    }
+		  })
+		  document.addEventListener('dragover', function (e) {
+		    e.preventDefault();
+		    e.stopPropagation();
+		  });
+			
+			// List all files in a directory in Node.js recursively in a synchronous fashion
+			// https://gist.github.com/kethinov/6658166#gistcomment-1921157
+		  function walkSync (dir, filelist) {
+				var path = path || require('path');
+				var fs = fs || require('fs'),
+					files = fs.readdirSync(dir)
+				filelist = filelist || []
+				files.forEach(function(file) {
+				if (fs.statSync(path.join(dir, file)).isDirectory()) {
+					filelist = walkSync(path.join(dir, file), filelist)
+				}
+				else {
+					filelist.push(path.join(dir, file))
+				}
+				})
+				return filelist
+			}
+		</script>
+		
+  </body>
+</html>
