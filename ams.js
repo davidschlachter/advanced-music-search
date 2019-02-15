@@ -160,6 +160,7 @@ function parseMetadata(filelist) {
 		if (audioFile.includes(".m4a") || audioFile.includes(".mp4")) {
             return mm.parseFile(audioFile).then(data => {
                 data.path = audioFile
+                data.index = metadata.length
                 metadata.push(data)
                 console.log("Processed: "+data.common.title)
                 return parseMetadata(filelist)
@@ -178,7 +179,7 @@ function makeTable(metadata) {
     let tbody = ""
     let str = ""
     for (let i = 0; i < metadata.length; i++) {
-        str = "<tr><td class=playbutton id=m" + i + ">▶</td><td>" + metadata[i].common.title+"</td><td>" + metadata[i].common.artist + "</td><td>" + metadata[i].common.album + "</td><td>" + metadata[i].common.bpm + "</td></tr>"
+        str = "<tr><td class=playbutton id=m" + metadata[i].index + ">▶</td><td>" + metadata[i].common.title+"</td><td>" + metadata[i].common.artist + "</td><td>" + metadata[i].common.album + "</td><td>" + metadata[i].common.bpm + "</td></tr>"
         tbody = tbody + str
     }
     document.getElementById("tbody").innerHTML = tbody
