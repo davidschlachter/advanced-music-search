@@ -27,6 +27,17 @@ document.getElementById("search").addEventListener('keydown', function (e) {
     }
 })
 
+// Listener for play/pause
+const {ipcRenderer} = require('electron')
+ipcRenderer.on('playpauselistener', (event, message) => {
+    if (document.getElementById('audiosrc').src === "") return
+    if (document.getElementById('audio').paused) {
+        document.getElementById('audio').play()
+    } else {
+        document.getElementById('audio').pause()
+    }
+})
+
 // Search function
 function search() {
     let results = new Array()

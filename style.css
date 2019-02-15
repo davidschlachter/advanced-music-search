@@ -35,3 +35,7 @@ td {
 #last {
     font-size: 80%;
 }
+#audio {
+    width: 80%;
+    margin-bottom: 1.6em;
+}
