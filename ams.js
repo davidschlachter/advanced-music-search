@@ -3,11 +3,13 @@ const Store = require('electron-store')
 const store = new Store()
 
 // Get the last folder used on launch
-let folder
+let folder = new String()
+let metadata = new Array()
 if (store.has("folder")) {
-    let folder = store.get("folder")
+    folder = store.get("folder")
     document.getElementById("last").innerHTML = "Last loaded " + folder
-    let metadata = getMetadata(folder)
+    getMetadata(folder)
+    makeTable(metadata)
     console.log(metadata)
     document.getElementById("last").innerHTML = "Loaded " + folder
 }
@@ -18,8 +20,9 @@ document.addEventListener('drop', function (e) {
     for (let f of e.dataTransfer.files) {
         let folder = f.path
         store.set("folder", folder)
-	    let metadata = getMetadata(folder)
+	    getMetadata(folder)
         document.getElementById("last").innerHTML = "Loaded " + folder
+        makeTable(metadata)
         console.log(metadata)
     }
 })
@@ -43,6 +46,7 @@ function walkSync (dir, filelist) {
 		filelist.push(path.join(dir, file))
 	}
 	})
+    parseMetadata(filelist)
 	return filelist
 }
 
@@ -50,17 +54,33 @@ function getMetadata(dir) {
 	let filelist = new Array()
     let data = new Array()
 	walkSync(dir, filelist)
-	console.log(filelist)
-	for (let i = 0; i < filelist.length; i++) {
-		if (filelist[i].includes(".m4a") || filelist[i].includes(".mp4")) {
-			mm.parseFile(filelist[i], {native: true})
-			  .then( metadata => {
-			    data.push(metadata)
-			  })
-			  .catch( err => {
-			    console.error(err.message)
-			  });
+}
+
+function parseMetadata(filelist) {
+    const audioFile = filelist.shift();
+    
+    if (audioFile) {
+		if (audioFile.includes(".m4a") || audioFile.includes(".mp4")) {
+            return mm.parseFile(audioFile).then(data => {
+                metadata.push(data)
+                console.log("Processed: "+data.common.title)
+                return parseMetadata(filelist)
+            }, reason => {
+                console.log(audioFile, reason)
+                return parseMetadata(filelist);
+            })
 		}
-	}
-    return data
+    } else {
+        makeTable(metadata)
+    }
+}
+
+function makeTable(metadata) {
+    let tbody = ""
+    let str = ""
+    for (let i = 0; i < metadata.length; i++) {
+        str = "<tr><td>" + metadata[i].common.title+"</td><td>" + metadata[i].common.artist + "</td><td>" + metadata[i].common.album + "</td><td>" + metadata[i].common.bpm + "</td></tr>"
+        tbody = tbody + str
+    }
+    document.getElementById("tbody").innerHTML = tbody
 }
