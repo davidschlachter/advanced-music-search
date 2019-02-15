@@ -2,6 +2,7 @@ const mm = require('music-metadata')
 const Store = require('electron-store')
 const store = new Store()
 const SearchString = require('search-string')
+const {ipcRenderer} = require('electron')
 
 // Get the last folder used on launch
 let folder = new String()
@@ -17,18 +18,27 @@ if (store.has("folder")) {
 }
 
 
-// Run search query on Enter in input box
+// Keyboard shortcuts
 document.getElementById("search").addEventListener('keydown', function (e) {
     if (e.keyCode == 13) {
         search()
     } else if (e.key === "Escape") {
+        if (document.getElementById("search").value.length === 0)
+            document.getElementById("search").blur()
         document.getElementById("search").value = ""
         makeTable(metadata)
     }
 })
-
-// Listener for play/pause
-const {ipcRenderer} = require('electron')
+document.addEventListener('keydown', function (e) {
+    if (e.key === "Escape") {
+        document.getElementById("search").value = ""
+        makeTable(metadata)
+    } else if (e.key === "/") {
+        window.scrollTo(0,0)
+        document.getElementById("search").focus()
+        e.preventDefault()
+    }
+})
 ipcRenderer.on('playpauselistener', (event, message) => {
     if (document.getElementById('audiosrc').src === "") return
     if (document.getElementById('audio').paused) {
