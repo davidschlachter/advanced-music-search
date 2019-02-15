@@ -6,7 +6,7 @@ let win
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({ width: 1300, height: 750 })
+  win = new BrowserWindow({webPreferences: {nodeIntegration: true}, width: 1300, height: 750})
 
   // and load the index.html of the app.
   win.loadFile('index.html')
