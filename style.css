@@ -29,8 +29,11 @@ td {
 	white-space: nowrap;
 	overflow: scroll;
 }
-#bpm, #playbuttons {
-	width: 3em;
+#bpm {
+    width: 3em;
+}
+#playbuttons {
+	width: 1em;
 }
 #last {
     font-size: 80%;
@@ -38,4 +41,11 @@ td {
 #audio {
     width: 80%;
     margin-bottom: 1.6em;
+}
+.playbutton {
+    user-select: none;
+    cursor: default;
+}
+.playbutton:hover {
+    cursor: pointer;
 }
