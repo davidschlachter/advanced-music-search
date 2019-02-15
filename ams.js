@@ -1,6 +1,7 @@
 const mm = require('music-metadata')
 const Store = require('electron-store')
 const store = new Store()
+const SearchString = require('search-string')
 
 // Get the last folder used on launch
 let folder = new String()
@@ -12,8 +13,11 @@ if (store.has("folder")) {
     makeTable(metadata)
     console.log(metadata)
     document.getElementById("last").innerHTML = "Loaded " + folder
+} else {
+    document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
 }
 
+// Process new folder dropped into window
 document.addEventListener('drop', function (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -27,11 +31,11 @@ document.addEventListener('drop', function (e) {
     }
 })
 document.addEventListener('dragover', function (e) {
-e.preventDefault()
-e.stopPropagation()
+    e.preventDefault()
+    e.stopPropagation()
 });
 
-// List all files in a directory in Node.js recursively in a synchronous fashion
+// List all files recursively
 // https://gist.github.com/kethinov/6658166#gistcomment-1921157
 function walkSync (dir, filelist) {
 	var path = path || require('path');
@@ -50,12 +54,14 @@ function walkSync (dir, filelist) {
 	return filelist
 }
 
+// Get metadata parent function
 function getMetadata(dir) {
 	let filelist = new Array()
     let data = new Array()
 	walkSync(dir, filelist)
 }
 
+// Run parser on files to get metadata (recursive)
 function parseMetadata(filelist) {
     const audioFile = filelist.shift();
     
@@ -75,6 +81,7 @@ function parseMetadata(filelist) {
     }
 }
 
+// Construct the metadata table
 function makeTable(metadata) {
     let tbody = ""
     let str = ""
