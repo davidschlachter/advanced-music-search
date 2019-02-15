@@ -29,6 +29,9 @@ td {
 	white-space: nowrap;
 	overflow: scroll;
 }
-#bpm {
+#bpm, #playbuttons {
 	width: 3em;
+}
+#last {
+    font-size: 80%;
 }

@@ -16,6 +16,7 @@ if (store.has("folder")) {
     document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
 }
 
+
 // Run search query on Enter in input box
 document.getElementById("search").addEventListener('keydown', function (e) {
     if (e.keyCode == 13) {
@@ -147,6 +148,7 @@ function parseMetadata(filelist) {
     if (audioFile) {
 		if (audioFile.includes(".m4a") || audioFile.includes(".mp4")) {
             return mm.parseFile(audioFile).then(data => {
+                data.path = audioFile
                 metadata.push(data)
                 console.log("Processed: "+data.common.title)
                 return parseMetadata(filelist)
@@ -165,8 +167,21 @@ function makeTable(metadata) {
     let tbody = ""
     let str = ""
     for (let i = 0; i < metadata.length; i++) {
-        str = "<tr><td>" + metadata[i].common.title+"</td><td>" + metadata[i].common.artist + "</td><td>" + metadata[i].common.album + "</td><td>" + metadata[i].common.bpm + "</td></tr>"
+        str = "<tr><td class=playbutton id=m" + i + ">▶</td><td>" + metadata[i].common.title+"</td><td>" + metadata[i].common.artist + "</td><td>" + metadata[i].common.album + "</td><td>" + metadata[i].common.bpm + "</td></tr>"
         tbody = tbody + str
     }
     document.getElementById("tbody").innerHTML = tbody
+    // Add playback listeners
+    let playbuttons = document.getElementsByClassName("playbutton")
+    for (let i = 0; i < playbuttons.length; i++) {
+        playbuttons[i].addEventListener('click', loadTrack, false)
+    }
+}
+
+// Load a track to the deck
+function loadTrack(e) {
+    trackid = parseInt(e.srcElement.id.substring(1))
+    document.getElementById('audiosrc').src = metadata[trackid].path
+    document.getElementById('audio').load()
+    document.getElementById('audio').play()
 }
