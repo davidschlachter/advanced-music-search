@@ -9,12 +9,22 @@
   <body>
     <h1>advanced-music-search</h1>
 		
-		<p>Drop your music folder here to get started:</p>
-		<div id="holder">
-		  🎶
-		</div>
+		<input id=search type="text" name="search" autofocus autocomplete=off placeholder="Search! e.g. artist:goodman -artist:krupa complete jazz">
+		
+		<p id=help></p>
 		<p id=last></p>
-		<table id=table><thead><tr><th>Title</th><th>Artist</th><th>Album</th><th>BPM</th></tr></thead><tbody id=tbody></tbody></table>
+		<table id=table>
+		    <colgroup>
+		       <col id="title">
+			   <col id="artist">
+			   <col id="album">
+			   <col id="bpm">
+		   </colgroup>
+			<thead>
+				<tr><th>Title</th><th>Artist</th><th>Album</th><th>BPM</th></tr>
+			</thead>
+			<tbody id=tbody></tbody>
+		</table>
 		<script src="ams.js"></script>
   </body>
 </html>

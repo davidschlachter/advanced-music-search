@@ -11,14 +11,95 @@ if (store.has("folder")) {
     document.getElementById("last").innerHTML = "Last loaded " + folder
     getMetadata(folder)
     makeTable(metadata)
-    console.log(metadata)
     document.getElementById("last").innerHTML = "Loaded " + folder
 } else {
     document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
 }
 
+// Run search query on Enter in input box
+document.getElementById("search").addEventListener('keydown', function (e) {
+    if (e.keyCode == 13) {
+        search()
+    } else if (e.key === "Escape") {
+        document.getElementById("search").value = ""
+        makeTable(metadata)
+    }
+})
+
+// Search function
+function search() {
+    let results = new Array()
+    const str = document.getElementById("search").value.toLowerCase()
+    const searchString = SearchString.parse(str)
+    console.log(searchString)
+    let tag = "", query = "", tSearch = "", before = 0, after = 0
+    // For each metadata item, check if the search query matches
+    for (let i = 0; i < metadata.length; i++) {
+        // Default state
+        metadata[i].remove = false
+        before = 0
+        after = 0
+        // Check key:variable conditions
+        for (let j = 0; j < searchString.conditionArray.length; j++) {
+            let keyword = searchString.conditionArray[j].keyword
+            if (keyword === "before") {
+                before = parseInt(searchString.conditionArray[j].value)
+                continue
+            } else if (keyword === "after") {
+                after = parseInt(searchString.conditionArray[j].value)
+                continue
+            }
+            let tag = metadata[i].common[keyword].toLowerCase()
+            query = searchString.conditionArray[j].value
+            if (tag.includes(query) && searchString.conditionArray[j].negated === true) {
+                metadata[i].remove = true
+            } else if (!tag.includes(query) && searchString.conditionArray[j].negated === false) {
+                metadata[i].remove = true
+            }
+        }
+        // Date searching
+        if (before > 0 && metadata[i].common.hasOwnProperty("year")) {
+            if (metadata[i].common.year > before)
+                metadata[i].remove = true
+        }
+        if (after > 0 && metadata[i].common.hasOwnProperty("year")) {
+            if (metadata[i].common.year < after)
+                metadata[i].remove = true
+        }
+        // Construct the string to match against text queries
+        if (metadata[i].common.hasOwnProperty("title"))
+            tSearch  = metadata[i].common.title.toString() + " "
+        if (metadata[i].common.hasOwnProperty("artist"))
+            tSearch += metadata[i].common.artist.toString() + " "
+        if (metadata[i].common.hasOwnProperty("album"))
+            tSearch += metadata[i].common.album.toString() + " "
+        if (metadata[i].common.hasOwnProperty("albumartist"))
+            tSearch += metadata[i].common.albumartist.toString() + " "
+        tSearch  = tSearch.toLowerCase()
+        // Match text queries against common metadata fields
+        for (let j = 0; j < searchString.textSegments.length; j++) {
+            query = searchString.textSegments[j].text
+            if (tSearch.includes(query) && searchString.textSegments[j].negated === true) {
+                metadata[i].remove = true
+            } else if (!tSearch.includes(query) && searchString.textSegments[j].negated === false) {
+                metadata[i].remove = true
+            }
+        }
+    } // done checking metadata items
+    
+    // Update the table with only matching items
+    for (let i = 0; i < metadata.length; i++) {
+        if (metadata[i].remove === false) {
+            results.push(metadata[i])
+        }
+    }
+    makeTable(results)
+}
+
 // Process new folder dropped into window
 document.addEventListener('drop', function (e) {
+    metadata.length = 0
+    document.getElementById("search").value = ""
     e.preventDefault()
     e.stopPropagation()
     for (let f of e.dataTransfer.files) {
@@ -26,8 +107,6 @@ document.addEventListener('drop', function (e) {
         store.set("folder", folder)
 	    getMetadata(folder)
         document.getElementById("last").innerHTML = "Loaded " + folder
-        makeTable(metadata)
-        console.log(metadata)
     }
 })
 document.addEventListener('dragover', function (e) {
