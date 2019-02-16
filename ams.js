@@ -13,12 +13,12 @@ let oldmetadata = new Array()
 if (store.has("metadata")) {
 	metadata = store.get("metadata")
 	console.log("Loaded old metadata")
+	makeTable(metadata) // Show right away for launch
 }
-if (store.has("folder")) {
+if (store.has("folder")) { // Trigger rescan on launch
     folder = store.get("folder")
     document.getElementById("last").innerHTML = "Last loaded " + folder
     getMetadata(folder)
-    makeTable(metadata)
     document.getElementById("last").innerHTML = "Loaded " + folder
 } else {
     document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
@@ -61,13 +61,15 @@ function search() {
     const str = document.getElementById("search").value.toLowerCase()
     const searchString = SearchString.parse(str)
     console.log(searchString)
-    let tag = "", query = "", tSearch = "", before = 0, after = 0
+    let tag = "", query = "", tSearch = "", before = 0, after = 0, bpmlow = 0, bpmhigh = 0
     // For each metadata item, check if the search query matches
     for (let i = 0; i < metadata.length; i++) {
         // Default state
         metadata[i].remove = false
         before = 0
         after = 0
+		bpmlow = 0
+		bpmhigh = 0
         // Check key:variable conditions
         for (let j = 0; j < searchString.conditionArray.length; j++) {
             let keyword = searchString.conditionArray[j].keyword
@@ -86,15 +88,6 @@ function search() {
                 metadata[i].remove = true
             }
         }
-        // Date searching
-        if (before > 0 && metadata[i].common.hasOwnProperty("year")) {
-            if (metadata[i].common.year > before)
-                metadata[i].remove = true
-        }
-        if (after > 0 && metadata[i].common.hasOwnProperty("year")) {
-            if (metadata[i].common.year < after)
-                metadata[i].remove = true
-        }
         // Construct the string to match against text queries
         if (metadata[i].common.hasOwnProperty("title"))
             tSearch  = metadata[i].common.title.toString() + " "
@@ -105,9 +98,43 @@ function search() {
         if (metadata[i].common.hasOwnProperty("albumartist"))
             tSearch += metadata[i].common.albumartist.toString() + " "
         tSearch  = tSearch.toLowerCase()
+		// Alternate before/after synthax and bpm search
+		for (let j = 0; j < searchString.textSegments.length; j++) {
+			query = searchString.textSegments[j].text
+			if (query.includes("<") || query.includes(">")) {
+				if (query.includes("year>")) {
+					after = parseInt(query.substring(5))
+				} else if (query.includes("year<")) {
+					before = parseInt(query.substring(5))
+				} else if (query.includes("bpm>")) {
+					bpmlow = parseInt(query.substring(4))
+				} else if (query.includes("bpm<")) {
+					bpmhigh = parseInt(query.substring(4))
+				}
+			}
+		}
+        // Date searching
+        if (before > 0 && metadata[i].common.hasOwnProperty("year")) {
+            if (metadata[i].common.year > before)
+                metadata[i].remove = true
+        }
+        if (after > 0 && metadata[i].common.hasOwnProperty("year")) {
+            if (metadata[i].common.year < after)
+                metadata[i].remove = true
+        }
+		// BPM search
+        if (bpmlow > 0 && metadata[i].common.hasOwnProperty("bpm")) {
+            if (metadata[i].common.bpm < bpmlow)
+                metadata[i].remove = true
+        }
+        if (bpmhigh > 0 && metadata[i].common.hasOwnProperty("bpm")) {
+            if (metadata[i].common.bpm > bpmhigh)
+                metadata[i].remove = true
+        }
         // Match text queries against common metadata fields
         for (let j = 0; j < searchString.textSegments.length; j++) {
             query = searchString.textSegments[j].text
+			if (query.includes("<") || query.includes(">")) continue
             if (tSearch.includes(query) && searchString.textSegments[j].negated === true) {
                 metadata[i].remove = true
             } else if (!tSearch.includes(query) && searchString.textSegments[j].negated === false) {
@@ -205,6 +232,7 @@ function parseMetadata(filelist) {
             })
 		}
     } else {
+		console.log("Finished updating metadata")
         makeTable(metadata)
 		store.set("metadata", metadata)
     }
