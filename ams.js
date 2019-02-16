@@ -3,10 +3,17 @@ const Store = require('electron-store')
 const store = new Store()
 const SearchString = require('search-string')
 const {ipcRenderer} = require('electron')
+const path = require('path')
+const fs = require('fs')
 
 // Get the last folder used on launch
 let folder = new String()
 let metadata = new Array()
+let oldmetadata = new Array()
+if (store.has("metadata")) {
+	metadata = store.get("metadata")
+	console.log("Loaded old metadata")
+}
 if (store.has("folder")) {
     folder = store.get("folder")
     document.getElementById("last").innerHTML = "Last loaded " + folder
@@ -139,9 +146,7 @@ document.addEventListener('dragover', function (e) {
 // List all files recursively
 // https://gist.github.com/kethinov/6658166#gistcomment-1921157
 function walkSync (dir, filelist) {
-	var path = path || require('path');
-	var fs = fs || require('fs'),
-		files = fs.readdirSync(dir)
+	const files = fs.readdirSync(dir)
 	filelist = filelist || []
 	files.forEach(function(file) {
 	if (fs.statSync(path.join(dir, file)).isDirectory()) {
@@ -151,6 +156,7 @@ function walkSync (dir, filelist) {
 		filelist.push(path.join(dir, file))
 	}
 	})
+	
     parseMetadata(filelist)
 	return filelist
 }
@@ -159,28 +165,48 @@ function walkSync (dir, filelist) {
 function getMetadata(dir) {
 	let filelist = new Array()
     let data = new Array()
+	
+	oldmetadata = JSON.parse(JSON.stringify(metadata))
+	metadata.length = 0
+	
 	walkSync(dir, filelist)
 }
 
 // Run parser on files to get metadata (recursive)
 function parseMetadata(filelist) {
     const audioFile = filelist.shift();
-    
+	
     if (audioFile) {
+		let mtime = new Date(fs.statSync(audioFile).mtime)
+		
+		// Check if already processed
+		for (let i=0; i < oldmetadata.length; i++) {
+			if (oldmetadata[i].path === audioFile) {
+				if (oldmetadata[i].mtime === JSON.parse(JSON.stringify(mtime))) {
+					oldmetadata[i].index = metadata.length
+					metadata.push(oldmetadata[i])
+					return parseMetadata(filelist)
+				}
+			}
+		}
+		// Otherwise, 
 		if (audioFile.includes(".m4a") || audioFile.includes(".mp4")) {
             return mm.parseFile(audioFile).then(data => {
                 data.path = audioFile
                 data.index = metadata.length
+				data.common.picture.length = 0
+                data.mtime = JSON.parse(JSON.stringify(mtime))
                 metadata.push(data)
-                console.log("Processed: "+data.common.title)
+                console.log("Updated: "+data.common.title)
                 return parseMetadata(filelist)
             }, reason => {
                 console.log(audioFile, reason)
-                return parseMetadata(filelist);
+                return parseMetadata(filelist)
             })
 		}
     } else {
         makeTable(metadata)
+		store.set("metadata", metadata)
     }
 }
 
