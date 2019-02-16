@@ -12,7 +12,7 @@ function createWindow () {
   win.loadFile('index.html')
 
   // Open the DevTools.
-  win.webContents.openDevTools()
+  //win.webContents.openDevTools()
     
   // Register shortcuts
   globalShortcut.register('mediaplaypause', () => {

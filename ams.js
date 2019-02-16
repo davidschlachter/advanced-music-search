@@ -5,6 +5,48 @@ const SearchString = require('search-string')
 const {ipcRenderer} = require('electron')
 const path = require('path')
 const fs = require('fs')
+const MP4Parser = require('mp4parser')
+const crypto = require('crypto')
+
+
+// Calculate SHA1 hashes of the first 1000 bytes of each audio file (serves as unique identifier for playlists)
+function setHash(filelist) {
+	const audioFile = filelist.shift()
+	
+	if (audioFile) {
+		let mtime = new Date(fs.statSync(audioFile).mtime)
+		for (let i=0; i < metadata.length; i++) {
+			if (metadata[i].path === audioFile) {
+				if (metadata[i].mtime === JSON.parse(JSON.stringify(mtime)) && metadata[i].hasOwnProperty("hash")) {
+					return setHash(filelist)
+				}
+			}
+		}
+		let stream = fs.createReadStream(audioFile, {start: 0, highWaterMark: 1000000000})
+		let parser = new MP4Parser.default(stream)
+		parser.on('data_mdat', chunk => {
+			let buff = chunk.toString("utf8", 0)
+			let hash = crypto.createHash('sha1').update(buff).digest('base64')
+			console.log("New/updated hash for", audioFile, chunk.length, hash)
+			for (let i=0; i < metadata.length; i++) {
+				if (metadata[i].path === audioFile) {
+					metadata[i].hash = hash
+					break
+				}
+				if (i === (metadata.length -1 )) {
+					console.log("Error: file not in metadata", audiofile)
+				}
+			}
+			return setHash(filelist)
+		})
+		parser.start()
+	} else {
+		console.log("Finished updating hashes")
+		store.set("metadata", metadata)
+	}
+	
+}
+
 
 // Get the last folder used on launch
 let folder = new String()
@@ -184,7 +226,18 @@ function walkSync (dir, filelist) {
 	}
 	})
 	
-    parseMetadata(filelist)
+	if (store.get("folder") === dir) { // If finishing top-level walkSync
+		let newlist = new Array()
+		for (let i=0; i<filelist.length;i++) {
+			if (filelist[i].includes(".m4a") || filelist[i].includes(".mp4")) {
+				newlist.push(filelist[i])
+			}
+		}
+		filelist = newlist
+		window.filelist = JSON.parse(JSON.stringify(filelist))
+		console.log("Finished walkSync")
+	    parseMetadata(filelist)
+	}
 	return filelist
 }
 
@@ -201,7 +254,7 @@ function getMetadata(dir) {
 
 // Run parser on files to get metadata (recursive)
 function parseMetadata(filelist) {
-    const audioFile = filelist.shift();
+    const audioFile = filelist.shift()
 	
     if (audioFile) {
 		let mtime = new Date(fs.statSync(audioFile).mtime)
@@ -217,24 +270,24 @@ function parseMetadata(filelist) {
 			}
 		}
 		// Otherwise, 
-		if (audioFile.includes(".m4a") || audioFile.includes(".mp4")) {
-            return mm.parseFile(audioFile).then(data => {
-                data.path = audioFile
-                data.index = metadata.length
-				data.common.picture.length = 0
-                data.mtime = JSON.parse(JSON.stringify(mtime))
-                metadata.push(data)
-                console.log("Updated: "+data.common.title)
-                return parseMetadata(filelist)
-            }, reason => {
-                console.log(audioFile, reason)
-                return parseMetadata(filelist)
-            })
-		}
+        return mm.parseFile(audioFile).then(data => {
+            data.path = audioFile
+            data.index = metadata.length
+			data.common.picture.length = 0
+            data.mtime = JSON.parse(JSON.stringify(mtime))
+            metadata.push(data)
+            console.log("New/updated metadata for: "+data.path)
+            return parseMetadata(filelist)
+        }, reason => {
+            console.log(audioFile, reason)
+            return parseMetadata(filelist)
+        })
     } else {
 		console.log("Finished updating metadata")
         makeTable(metadata)
-		store.set("metadata", metadata)
+		console.log("Now updating hashes")
+		filelist = JSON.parse(JSON.stringify(window.filelist))
+		setHash(filelist)
     }
 }
 

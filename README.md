@@ -15,7 +15,7 @@ How to use: launch app, drag music folder into window to load metadata
 ## Roadmap
 
 - [X] Key feature: search like Gmail, e.g. artist:"Tamar Korn" -artist:"Gordon Webster" before:2014
-- [ ] SHA1 hash of audio streams identifies tracks (stays the same even if metadata changed)
+- [X] SHA1 hash of audio streams identifies tracks (stays the same even if metadata changed)
 - [ ] Customizable views (columns)
 - [ ] Playlists
 - [X] Playback with scrubbing
