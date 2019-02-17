@@ -345,10 +345,11 @@ function setHash(filelist) {
 			hash.setEncoding('hex')
 			hash.write(chunk)
 			hash.end()
-			console.log("New/updated hash for", audioFile, chunk.length, hash.read(), "(mdat)")
+			hashText = hash.read()
+			console.log("New/updated hash for", audioFile, chunk.length, hashText, "(mdat)")
 			for (let i=0; i < metadata.length; i++) {
 				if (metadata[i].path === audioFile) {
-					metadata[i].hash = hash.read()
+					metadata[i].hash = hashText
 					return setHash(filelist)
 				}
 				if (i === (metadata.length -1 )) {
@@ -363,10 +364,11 @@ function setHash(filelist) {
 			hash.setEncoding('hex')
 			hash.write(chunk)
 			hash.end()
-			console.log("New/updated hash for", audioFile, chunk.length, hash.read(), "(roll)")
+			hashText = hash.read()
+			console.log("New/updated hash for", audioFile, chunk.length, hashText, "(roll)")
 			for (let i=0; i < metadata.length; i++) {
 				if (metadata[i].path === audioFile) {
-					metadata[i].hash = hash.read()
+					metadata[i].hash = hashText
 					return setHash(filelist)
 				}
 				if (i === (metadata.length -1 )) {
