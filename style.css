@@ -30,22 +30,22 @@ td {
 	overflow: scroll;
 }
 #bpm {
-    width: 3em;
+	width: 3em;
 }
 #playbuttons {
 	width: 1em;
 }
 #last {
-    font-size: 80%;
+	font-size: 80%;
 }
 #audio {
-    width: 80%;
-    margin-bottom: 1.6em;
+	width: 80%;
+	margin-bottom: 1.6em;
 }
 .playbutton {
-    user-select: none;
-    cursor: default;
+	user-select: none;
+	cursor: default;
 }
 .playbutton:hover {
-    cursor: pointer;
+	cursor: pointer;
 }
