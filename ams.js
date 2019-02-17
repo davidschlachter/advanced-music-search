@@ -89,13 +89,59 @@ document.addEventListener('keydown', function (e) {
     }
 })
 ipcRenderer.on('playpauselistener', (event, message) => {
-    if (document.getElementById('audiosrc').src === "") return
+    if (document.getElementById('audiosrc').src === "") {
+    	loadCurrentTracks()
+		return
+    }
     if (document.getElementById('audio').paused) {
         document.getElementById('audio').play()
     } else {
         document.getElementById('audio').pause()
     }
 })
+
+// Play currently listed tracks
+document.getElementById("playThese").addEventListener('click', loadCurrentTracks, false)
+function loadCurrentTracks() {
+	let tracks = new Array()
+    let playbuttons = document.getElementsByClassName("playbutton")
+    for (let i = 0; i < playbuttons.length; i++) {
+        let currentID = playbuttons[i].id.substring(1)
+		tracks.push(metadata[currentID].hash)
+    }
+	
+	playByHashes(tracks)
+}
+
+// Play by hashes
+function playByHashes(hashes) {
+	if (hashes.length === 0) return
+	if (document.getElementById('shuffle').checked) {
+		// https://stackoverflow.com/a/12646864/3380815
+		for (let i = hashes.length - 1; i > 0; i--) {
+		    const j = Math.floor(Math.random() * (i + 1));
+		    [hashes[i], hashes[j]] = [hashes[j], hashes[i]];
+		}
+	}
+	let hash = hashes.shift()
+	let path = ""
+	for (let i=0; i<metadata.length; i++) {
+		if (metadata[i].hash === hash) {
+			path = metadata[i].path
+		}
+	}
+	if (path === "") return playByHashes(hashes)
+	document.getElementById('audiosrc').src = path
+    document.getElementById('audio').load()
+    let playPromise = document.getElementById('audio').play()
+	playPromise.then(function() {
+	document.getElementById('audio').onended = function() {
+		return playByHashes(hashes)
+	}
+	}).catch(function(error) {
+		console.log("Playback promise returned error", error)
+	})
+}
 
 // Search function
 function search() {
@@ -210,7 +256,7 @@ document.addEventListener('drop', function (e) {
 document.addEventListener('dragover', function (e) {
     e.preventDefault()
     e.stopPropagation()
-});
+})
 
 // List all files recursively
 // https://gist.github.com/kethinov/6658166#gistcomment-1921157
@@ -273,7 +319,7 @@ function parseMetadata(filelist) {
         return mm.parseFile(audioFile).then(data => {
             data.path = audioFile
             data.index = metadata.length
-			data.common.picture.length = 0
+			if (data.common.hasOwnProperty("picture")) data.common.picture.length = 0
             data.mtime = JSON.parse(JSON.stringify(mtime))
             metadata.push(data)
             console.log("New/updated metadata for: "+data.path)
