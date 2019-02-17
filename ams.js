@@ -22,36 +22,39 @@ function setHash(filelist) {
 			}
 		}
 		let stream = fs.createReadStream(audioFile, {start: 0, highWaterMark: 1000000000})
+		stream.on('close', error => console.log('Stream closed'))
 		let parser = new MP4Parser.default(stream)
 		parser.on('data_mdat', chunk => {
-			let hash = crypto.createHash('sha1').update(chunk.toString("utf8", 0)).digest('base64')
-			console.log("New/updated hash for", audioFile, chunk.length, hash, "(mdat)")
+			let hash = crypto.createHash('sha1')
+			hash.setEncoding('hex')
+			hash.write(chunk)
+			hash.end()
+			console.log("New/updated hash for", audioFile, chunk.length, hash.read(), "(mdat)")
 			for (let i=0; i < metadata.length; i++) {
 				if (metadata[i].path === audioFile) {
-					metadata[i].hash = hash
-					parser._s.destroy() // Close file buffer
+					metadata[i].hash = hash.read()
 					return setHash(filelist)
 				}
 				if (i === (metadata.length -1 )) {
 					console.log("Error: file not in metadata", audiofile)
-					parser._s.destroy() // Close file buffer
 					return setHash(filelist)
 				}
 			}
 		})
 		// Same as above, don't repeat youself lol
 		parser.on('data_roll', chunk => {
-			let hash = crypto.createHash('sha1').update(chunk.toString("utf8", 0)).digest('base64')
-			console.log("New/updated hash for", audioFile, chunk.length, hash, "(roll)")
+			let hash = crypto.createHash('sha1')
+			hash.setEncoding('hex')
+			hash.write(chunk)
+			hash.end()
+			console.log("New/updated hash for", audioFile, chunk.length, hash.read(), "(roll)")
 			for (let i=0; i < metadata.length; i++) {
 				if (metadata[i].path === audioFile) {
-					metadata[i].hash = hash
-					parser._s.destroy() // Close file buffer
+					metadata[i].hash = hash.read()
 					return setHash(filelist)
 				}
 				if (i === (metadata.length -1 )) {
 					console.log("Error: file not in metadata", audiofile)
-					parser._s.destroy() // Close file buffer
 					return setHash(filelist)
 				}
 			}
@@ -67,7 +70,6 @@ function setHash(filelist) {
 		console.log("Finished updating hashes")
 		store.set("metadata", metadata)
 	}
-	
 }
 
 
