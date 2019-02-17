@@ -12,7 +12,6 @@ const crypto = require('crypto')
 // Calculate SHA1 hashes of mdat stream of each audio file (serves as unique identifier for playlists)
 function setHash(filelist) {
 	const audioFile = filelist.shift()
-	
 	if (audioFile) {
 		let mtime = new Date(fs.statSync(audioFile).mtime)
 		for (let i=0; i < metadata.length; i++) {
@@ -25,20 +24,44 @@ function setHash(filelist) {
 		let stream = fs.createReadStream(audioFile, {start: 0, highWaterMark: 1000000000})
 		let parser = new MP4Parser.default(stream)
 		parser.on('data_mdat', chunk => {
-			let buff = chunk.toString("utf8", 0)
-			let hash = crypto.createHash('sha1').update(buff).digest('base64')
-			console.log("New/updated hash for", audioFile, chunk.length, hash)
+			let hash = crypto.createHash('sha1').update(chunk.toString("utf8", 0)).digest('base64')
+			console.log("New/updated hash for", audioFile, chunk.length, hash, "(mdat)")
 			for (let i=0; i < metadata.length; i++) {
 				if (metadata[i].path === audioFile) {
 					metadata[i].hash = hash
-					break
+					parser._s.destroy() // Close file buffer
+					return setHash(filelist)
 				}
 				if (i === (metadata.length -1 )) {
 					console.log("Error: file not in metadata", audiofile)
+					parser._s.destroy() // Close file buffer
+					return setHash(filelist)
 				}
 			}
-			return setHash(filelist)
 		})
+		// Same as above, don't repeat youself lol
+		parser.on('data_roll', chunk => {
+			let hash = crypto.createHash('sha1').update(chunk.toString("utf8", 0)).digest('base64')
+			console.log("New/updated hash for", audioFile, chunk.length, hash, "(roll)")
+			for (let i=0; i < metadata.length; i++) {
+				if (metadata[i].path === audioFile) {
+					metadata[i].hash = hash
+					parser._s.destroy() // Close file buffer
+					return setHash(filelist)
+				}
+				if (i === (metadata.length -1 )) {
+					console.log("Error: file not in metadata", audiofile)
+					parser._s.destroy() // Close file buffer
+					return setHash(filelist)
+				}
+			}
+		})
+		// List all the atoms in the file (for debugging)
+		/*parser.on('atom', atom => {
+		    var seq = "0" + atom._seq;
+		    seq = seq.substring(seq.length - 2, seq.length);
+		    console.log(`${seq}. |${new Array(atom._level * 3).join('-')}${atom.type}(size:${atom.size}, pos:${atom._pos})`);
+		})*/
 		parser.start()
 	} else {
 		console.log("Finished updating hashes")
@@ -354,7 +377,12 @@ function parseMetadata(filelist) {
 		console.log("Finished updating metadata")
         makeTable(metadata)
 		console.log("Now updating hashes")
-		filelist = JSON.parse(JSON.stringify(window.filelist))
+		// Only get hashes for files from which metadata was sucessfully parsed
+		let newFileList = new Array()
+		for (let i=0; i<metadata.length; i++) {
+			newFileList.push(metadata[i].path)
+		}
+		filelist = JSON.parse(JSON.stringify(newFileList))
 		setHash(filelist)
     }
 }
