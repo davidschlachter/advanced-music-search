@@ -9,7 +9,7 @@ const MP4Parser = require('mp4parser')
 const crypto = require('crypto')
 
 
-// Calculate SHA1 hashes of the first 1000 bytes of each audio file (serves as unique identifier for playlists)
+// Calculate SHA1 hashes of mdat stream of each audio file (serves as unique identifier for playlists)
 function setHash(filelist) {
 	const audioFile = filelist.shift()
 	
@@ -65,6 +65,9 @@ if (store.has("folder")) { // Trigger rescan on launch
 } else {
     document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
 }
+if (store.has("shuffle")) {
+	document.getElementById('shuffle').checked = store.get("shuffle")
+}
 
 
 // Keyboard shortcuts
@@ -100,6 +103,22 @@ ipcRenderer.on('playpauselistener', (event, message) => {
     }
 })
 
+// Save shuffle button state
+document.getElementById("shuffle").addEventListener('click', saveShuffleState, false)
+function saveShuffleState() {
+	store.set("shuffle", document.getElementById('shuffle').checked)
+}
+// Next and previous buttons
+document.getElementById("next").addEventListener('click', loadCurrentTracks, false)
+function playNextTrack() {
+	if (!document.getElementById('audio').paused) {
+		document.getElementById('audio').currentTime = document.getElementById('audio').duration
+	}
+}
+// Currently playing listener
+function showTitle(title) {
+	document.getElementById("nowplaying").innerHTML = title
+}
 // Play currently listed tracks
 document.getElementById("playThese").addEventListener('click', loadCurrentTracks, false)
 function loadCurrentTracks() {
@@ -125,19 +144,22 @@ function playByHashes(hashes) {
 	}
 	let hash = hashes.shift()
 	let path = ""
+	let title = ""
 	for (let i=0; i<metadata.length; i++) {
 		if (metadata[i].hash === hash) {
 			path = metadata[i].path
+			title = metadata[i].common.title
 		}
 	}
 	if (path === "") return playByHashes(hashes)
 	document.getElementById('audiosrc').src = path
     document.getElementById('audio').load()
     let playPromise = document.getElementById('audio').play()
+	showTitle(title)
 	playPromise.then(function() {
-	document.getElementById('audio').onended = function() {
-		return playByHashes(hashes)
-	}
+		document.getElementById('audio').onended = function() {
+			return playByHashes(hashes)
+		}
 	}).catch(function(error) {
 		console.log("Playback promise returned error", error)
 	})
@@ -359,4 +381,5 @@ function loadTrack(e) {
     document.getElementById('audiosrc').src = metadata[trackid].path
     document.getElementById('audio').load()
     document.getElementById('audio').play()
+	showTitle(metadata[trackid].common.title)
 }
