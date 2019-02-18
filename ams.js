@@ -328,66 +328,61 @@ function parseMetadata(filelist) {
 // Calculate SHA1 hashes of mdat stream of each audio file (serves as unique identifier for playlists)
 function setHash(filelist) {
 	const audioFile = filelist.shift()
-	if (audioFile) {
-		let mtime = new Date(fs.statSync(audioFile).mtime)
-		for (let i=0; i < metadata.length; i++) {
-			if (metadata[i].path === audioFile) {
-				if (metadata[i].mtime === JSON.parse(JSON.stringify(mtime)) && metadata[i].hasOwnProperty("hash")) {
-					return setHash(filelist)
+	try {
+		if (audioFile) {
+			let mtime = new Date(fs.statSync(audioFile).mtime)
+			for (let i=0; i < metadata.length; i++) {
+				if (metadata[i].path === audioFile) {
+					if (metadata[i].mtime === JSON.parse(JSON.stringify(mtime)) && metadata[i].hasOwnProperty("hash")) {
+						return setHash(filelist)
+					}
 				}
 			}
+			let stream = fs.createReadStream(audioFile, {start: 0})
+			let parser = new MP4Parser.default(stream)
+			let hash = crypto.createHash('sha1')
+			hash.setEncoding('hex')
+			// iTunes encoder stores audio data in mdat atom
+			parser.on('data_mdat', chunk => {
+				hash.update(chunk)
+			})
+			// FFMPEG stores audio data in roll atom
+			parser.on('data_roll', chunk => {
+				hash.update(chunk)
+			})
+			stream.on('end', () => {
+				hash.end()
+				hashText = hash.read()
+				console.log("New/updated hash for", audioFile, hashText)
+				for (let i=0; i < metadata.length; i++) {
+					if (metadata[i].path === audioFile) {
+						metadata[i].hash = hashText
+						// Be ridiculous and save metadata constantly
+						store.set("metadata", metadata)
+						return setHash(filelist)
+					}
+					if (i === (metadata.length - 1 )) {
+						console.log("Error: file not in metadata", audiofile)
+						return setHash(filelist)
+					}
+				}
+			})
+			// List all the atoms in the file (for debugging)
+			/*parser.on('atom', atom => {
+				var seq = "0" + atom._seq
+				seq = seq.substring(seq.length - 2, seq.length)
+				console.log(`${seq}. |${new Array(atom._level * 3).join('-')}${atom.type}(size:${atom.size}, pos:${atom._pos})`)
+			})*/
+			parser.start()
+		} else {
+			console.log("Finished updating hashes")
+			store.set("metadata", metadata)
 		}
-		let stream = fs.createReadStream(audioFile, {start: 0, highWaterMark: 1000000000})
-		stream.on('close', error => console.log('Stream closed'))
-		let parser = new MP4Parser.default(stream)
-		parser.on('data_mdat', chunk => {
-			let hash = crypto.createHash('sha1')
-			hash.setEncoding('hex')
-			hash.write(chunk)
-			hash.end()
-			hashText = hash.read()
-			console.log("New/updated hash for", audioFile, chunk.length, hashText, "(mdat)")
-			for (let i=0; i < metadata.length; i++) {
-				if (metadata[i].path === audioFile) {
-					metadata[i].hash = hashText
-					return setHash(filelist)
-				}
-				if (i === (metadata.length -1 )) {
-					console.log("Error: file not in metadata", audiofile)
-					return setHash(filelist)
-				}
-			}
-		})
-		// Same as above, don't repeat youself lol
-		parser.on('data_roll', chunk => {
-			let hash = crypto.createHash('sha1')
-			hash.setEncoding('hex')
-			hash.write(chunk)
-			hash.end()
-			hashText = hash.read()
-			console.log("New/updated hash for", audioFile, chunk.length, hashText, "(roll)")
-			for (let i=0; i < metadata.length; i++) {
-				if (metadata[i].path === audioFile) {
-					metadata[i].hash = hashText
-					return setHash(filelist)
-				}
-				if (i === (metadata.length -1 )) {
-					console.log("Error: file not in metadata", audiofile)
-					return setHash(filelist)
-				}
-			}
-		})
-		// List all the atoms in the file (for debugging)
-		/*parser.on('atom', atom => {
-			var seq = "0" + atom._seq;
-			seq = seq.substring(seq.length - 2, seq.length);
-			console.log(`${seq}. |${new Array(atom._level * 3).join('-')}${atom.type}(size:${atom.size}, pos:${atom._pos})`);
-		})*/
-		parser.start()
-	} else {
-		console.log("Finished updating hashes")
-		store.set("metadata", metadata)
+	} catch(error) {
+		console.log("Caught an error in setHash", error)
+		return setHash(filelist)
 	}
+	
 }
 
 // Construct the metadata table
