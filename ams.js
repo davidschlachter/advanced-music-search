@@ -6,6 +6,7 @@ const {ipcRenderer} = require('electron')
 const path = require('path')
 const fs = require('fs')
 const MP4Parser = require('mp4parser')
+const mp4dashparser = require('mp4-parser')
 const crypto = require('crypto')
 
 
@@ -336,14 +337,28 @@ function parseMetadata(filelist) {
 			console.log("New/updated metadata for: "+data.path)
 			return parseMetadata(filelist)
 		}, reason => {
+			// Try another parser
+			let stream = fs.createReadStream(audioFile)
+			let parser = stream.pipe(new mp4dashparser())
 			data = {}
-			data.path = audioFile
-			data.index = metadata.length
-			data.mtime = JSON.parse(JSON.stringify(mtime))
-			data.error = true
-			metadata.push(data)
-			console.log(audioFile, reason)
-			return parseMetadata(filelist)
+			data.common = {}
+			parser.on('data', function(tag){
+				if (tag.type === "aART") {data.common.albumartist = tag.value}
+				if (tag.type === "�ART") {data.common.artist = tag.value}
+				if (tag.type === "�alb") {data.common.album = tag.value}
+				if (tag.type === "�day") {data.common.year = tag.value}
+				if (tag.type === "�nam") {data.common.title = tag.value}
+				if (tag.type === "tmpo") {data.common.bpm = tag.value}
+			})
+			parser.on('end', function () {
+				data.path = audioFile
+				data.index = metadata.length
+				data.mtime = JSON.parse(JSON.stringify(mtime))
+				//data.error = true
+				metadata.push(data)
+				console.log("Second try data:", data, "file", audioFile, "first try error", reason)
+				return parseMetadata(filelist)
+			})
 		})
 	} else {
 		console.log("Finished updating metadata")
