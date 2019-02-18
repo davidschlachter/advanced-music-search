@@ -352,7 +352,7 @@ function parseMetadata(filelist) {
 function setHash(filelist) {
 	const audioFile = filelist.shift()
 	console.log(audioFile)
-	if (audioFile.hasOwnProperty("error") && audioFile.error) return setHash(filelist)
+	if (audioFile && audioFile.hasOwnProperty("error") && audioFile.error) return setHash(filelist)
 	try {
 		if (audioFile) {
 			let mtime = new Date(fs.statSync(audioFile).mtime)
