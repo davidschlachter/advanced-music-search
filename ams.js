@@ -11,24 +11,30 @@ const crypto = require('crypto')
 
 // Get the last folder used on launch
 let folder = new String()
+let masterTable = new String()
 let metadata = new Array()
 let oldmetadata = new Array()
+if (store.has("masterTable")) {
+	console.log("Loading masterTable")
+	masterTable = store.get("masterTable")
+	showTable(masterTable)
+	console.log("Done loading and building masterTable")
+}
+if (store.has("shuffle")) {
+	document.getElementById('shuffle').checked = store.get("shuffle")
+}
 if (store.has("metadata")) {
 	console.log("Loading old metadata")
 	metadata = store.get("metadata")
-	console.log("Loaded old metadata")
-	makeTable(metadata) // Show right away for launch
+	console.log("Done loading old metadata")
+	if (!store.has("masterTable")) makeTable(metadata)
 }
 if (store.has("folder")) { // Trigger rescan on launch
 	folder = store.get("folder")
-	document.getElementById("last").innerHTML = "Last loaded " + folder
 	getMetadata(folder)
 	document.getElementById("last").innerHTML = "Loaded " + folder
 } else {
 	document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
-}
-if (store.has("shuffle")) {
-	document.getElementById('shuffle').checked = store.get("shuffle")
 }
 
 
@@ -40,13 +46,13 @@ document.getElementById("search").addEventListener('keydown', function (e) {
 		if (document.getElementById("search").value.length === 0)
 			document.getElementById("search").blur()
 		document.getElementById("search").value = ""
-		makeTable(metadata)
+		showTable(masterTable)
 	}
 })
 document.addEventListener('keydown', function (e) {
 	if (e.key === "Escape") {
 		document.getElementById("search").value = ""
-		makeTable(metadata)
+		showTable(masterTable)
 	} else if (e.key === "/") {
 		window.scrollTo(0,0)
 		document.getElementById("search").focus()
@@ -322,7 +328,8 @@ function parseMetadata(filelist) {
 		})
 	} else {
 		console.log("Finished updating metadata")
-		makeTable(metadata)
+		masterTable = makeTable(metadata)
+		store.set("masterTable", masterTable)
 		console.log("Now updating hashes")
 		// Only get hashes for files from which metadata was sucessfully parsed
 		let newFileList = new Array()
@@ -402,8 +409,13 @@ function makeTable(metadata) {
 		str = "<tr><td class=playbutton id=m" + metadata[i].index + ">▶</td><td>" + metadata[i].common.title+"</td><td>" + metadata[i].common.artist + "</td><td>" + metadata[i].common.album + "</td><td>" + metadata[i].common.bpm + "</td></tr>"
 		tbody = tbody + str
 	}
+	showTable(tbody)
+	return tbody
+}
+
+// Just show a previously generated table
+function showTable(tbody) {
 	document.getElementById("tbody").innerHTML = tbody
-	// Add playback listeners
 	let playbuttons = document.getElementsByClassName("playbutton")
 	for (let i = 0; i < playbuttons.length; i++) {
 		playbuttons[i].addEventListener('click', loadTrack, false)
