@@ -371,6 +371,7 @@ function parseMetadata(filelist) {
 			newFileList.push(metadata[i].path)
 		}
 		filelist = JSON.parse(JSON.stringify(newFileList))
+		store.set("metadata", metadata) // don't rescan if hashing fails
 		setHash(filelist)
 	}
 }
@@ -378,7 +379,6 @@ function parseMetadata(filelist) {
 // Calculate SHA1 hashes of mdat stream of each audio file (serves as unique identifier for playlists)
 function setHash(filelist) {
 	const audioFile = filelist.shift()
-	if (audioFile && audioFile.hasOwnProperty("error") && audioFile.error) return setHash(filelist)
 	try {
 		if (audioFile) {
 			let mtime = new Date(fs.statSync(audioFile).mtime)
@@ -417,6 +417,9 @@ function setHash(filelist) {
 						return setHash(filelist)
 					}
 				}
+			})
+			stream.on('error', error => {
+				console.log("Error in stream:", error)
 			})
 			// List all the atoms in the file (for debugging)
 			/*parser.on('atom', atom => {
@@ -472,3 +475,13 @@ function loadTrack(e) {
 	document.getElementById('audio').play()
 	showTitle(metadata[trackid].common.title)
 }
+
+// Extremely hacky but seems to be only way to catch buffer boundsError...
+process.on('uncaughtException',function(error){
+	console.log("uncaughtException global handler got:", error)
+	if (error.message.includes("value of \"offset\" is out of range")) {
+		setHash(filelist)
+	} else {
+		console.log("Not an offset error, so not calling setHash")
+	}
+})
