@@ -318,11 +318,18 @@ function parseMetadata(filelist) {
 			data.path = audioFile
 			data.index = metadata.length
 			if (data.common.hasOwnProperty("picture")) data.common.picture.length = 0
+			if (data.hasOwnProperty("format")) data.format.length = 0
 			data.mtime = JSON.parse(JSON.stringify(mtime))
 			metadata.push(data)
 			console.log("New/updated metadata for: "+data.path)
 			return parseMetadata(filelist)
 		}, reason => {
+			data = {}
+			data.path = audioFile
+			data.index = metadata.length
+			data.mtime = JSON.parse(JSON.stringify(mtime))
+			data.error = true
+			metadata.push(data)
 			console.log(audioFile, reason)
 			return parseMetadata(filelist)
 		})
@@ -344,6 +351,8 @@ function parseMetadata(filelist) {
 // Calculate SHA1 hashes of mdat stream of each audio file (serves as unique identifier for playlists)
 function setHash(filelist) {
 	const audioFile = filelist.shift()
+	console.log(audioFile)
+	if (audioFile.hasOwnProperty("error") && audioFile.error) return setHash(filelist)
 	try {
 		if (audioFile) {
 			let mtime = new Date(fs.statSync(audioFile).mtime)
@@ -406,7 +415,14 @@ function makeTable(metadata) {
 	let tbody = ""
 	let str = ""
 	for (let i = 0; i < metadata.length; i++) {
-		str = "<tr><td class=playbutton id=m" + metadata[i].index + ">▶</td><td>" + metadata[i].common.title+"</td><td>" + metadata[i].common.artist + "</td><td>" + metadata[i].common.album + "</td><td>" + metadata[i].common.bpm + "</td></tr>"
+		let index = "", title = "", artist = "", album = "", bpm = ""
+		if (metadata[i].hasOwnProperty("index")) index = metadata[i].index
+		if (!metadata[i].hasOwnProperty("common")) continue
+		if (metadata[i].common.hasOwnProperty("title")) title = metadata[i].common.title
+		if (metadata[i].common.hasOwnProperty("artist")) artist = metadata[i].common.artist
+		if (metadata[i].common.hasOwnProperty("album")) album = metadata[i].common.album
+		if (metadata[i].common.hasOwnProperty("bpm")) bpm = metadata[i].common.bpm
+		str = "<tr><td class=playbutton id=m" + index + ">▶</td><td>" + title+"</td><td>" + artist + "</td><td>" + album + "</td><td>" + bpm + "</td></tr>"
 		tbody = tbody + str
 	}
 	showTable(tbody)
