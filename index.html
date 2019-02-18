@@ -6,34 +6,38 @@
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self';">
 		<link rel="stylesheet" href="style.css">
 	</head>
-	<body>		
-		<input id=search type="text" name="search" autofocus autocomplete=off placeholder="Search e.g. artist:goodman -artist:krupa bpm>200 complete jazz">
+	<body>
+		<header>
+			<input id=search type="text" name="search" autofocus autocomplete=off placeholder="Search e.g. artist:goodman -artist:krupa bpm>200 complete jazz">
+			<p id=status></p>
+		</header>
+		<div id=help></div>
 		
-		<p id=help></p>
-		<p id=last></p>
+		<div id=listing>
+			<table id=table>
+				<colgroup>
+					<col id="playbuttons">
+					<col id="title">
+					<col id="artist">
+					<col id="album">
+					<col id="bpm">
+				</colgroup>
+				<thead>
+					<tr><th></th><th>Title</th><th>Artist</th><th>Album</th><th>BPM</th></tr>
+				</thead>
+				<tbody id=tbody></tbody>
+			</table>
+		</div>
 		
-		<audio id=audio controls>
-			<source id=audiosrc>
-		</audio>
+		<footer>
+			<audio id=audio controls>
+				<source id=audiosrc>
+			</audio>
+			<div>
+				<a id="playThese" href="#">Play these tracks</a> &nbsp; Shuffle <input id=shuffle type=checkbox> &nbsp; <a id=next href="#">Next</a>
+			</div>
+		</footer>
 		
-		<p>
-			Currently playing: <span id=nowplaying></span>
-			<br><a id="playThese" href="#">Play these tracks</a> &nbsp; Shuffle <input id=shuffle type=checkbox> &nbsp; <a id=next href="#">Next</a>
-		</p>
-		
-		<table id=table>
-			<colgroup>
-				<col id="playbuttons">
-				<col id="title">
-				<col id="artist">
-				<col id="album">
-				<col id="bpm">
-			</colgroup>
-			<thead>
-				<tr><th></th><th>Title</th><th>Artist</th><th>Album</th><th>BPM</th></tr>
-			</thead>
-			<tbody id=tbody></tbody>
-		</table>
 		<script src="ams.js"></script>
 	</body>
 </html>

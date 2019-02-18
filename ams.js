@@ -32,7 +32,7 @@ if (store.has("metadata")) {
 if (store.has("folder")) { // Trigger rescan on launch
 	folder = store.get("folder")
 	getMetadata(folder)
-	document.getElementById("last").innerHTML = "Loaded " + folder
+	document.getElementById("status").innerHTML = "Loaded " + folder
 } else {
 	document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
 }
@@ -85,7 +85,7 @@ function playNextTrack() {
 }
 // Currently playing listener
 function showTitle(title) {
-	document.getElementById("nowplaying").innerHTML = title
+	document.getElementById("status").innerHTML = title
 }
 // Play currently listed tracks
 document.getElementById("playThese").addEventListener('click', loadCurrentTracks, false)
@@ -247,7 +247,7 @@ document.addEventListener('drop', function (e) {
 		let folder = f.path
 		store.set("folder", folder)
 		getMetadata(folder)
-		document.getElementById("last").innerHTML = "Loaded " + folder
+		document.getElementById("status").innerHTML = "Loaded " + folder
 	}
 })
 document.addEventListener('dragover', function (e) {
@@ -351,7 +351,6 @@ function parseMetadata(filelist) {
 // Calculate SHA1 hashes of mdat stream of each audio file (serves as unique identifier for playlists)
 function setHash(filelist) {
 	const audioFile = filelist.shift()
-	console.log(audioFile)
 	if (audioFile && audioFile.hasOwnProperty("error") && audioFile.error) return setHash(filelist)
 	try {
 		if (audioFile) {
