@@ -18,6 +18,9 @@ function createWindow () {
 	globalShortcut.register('mediaplaypause', () => {
 		win.webContents.send('playpauselistener', 'playpause')
 	})
+	globalShortcut.register('medianexttrack', () => {
+		win.webContents.send('nextlistener', 'nexttrack')
+	})
 
 	// Emitted when the window is closed.
 	win.on('closed', () => {

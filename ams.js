@@ -70,6 +70,14 @@ ipcRenderer.on('playpauselistener', (event, message) => {
 		document.getElementById('audio').pause()
 	}
 })
+ipcRenderer.on('nextlistener', (event, message) => {
+	if (document.getElementById('audiosrc').src === "") {
+		loadCurrentTracks()
+	} else {
+		playNextTrack()
+	}
+	
+})
 
 // Save shuffle button state
 document.getElementById("shuffle").addEventListener('click', saveShuffleState, false)
@@ -79,6 +87,10 @@ function saveShuffleState() {
 // Next and previous buttons
 document.getElementById("next").addEventListener('click', loadCurrentTracks, false)
 function playNextTrack() {
+	if (document.getElementById('audiosrc').src === "") {
+		loadCurrentTracks()
+		return
+	}
 	if (!document.getElementById('audio').paused) {
 		document.getElementById('audio').currentTime = document.getElementById('audio').duration
 	}
