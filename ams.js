@@ -14,6 +14,7 @@ let folder = new String()
 let metadata = new Array()
 let oldmetadata = new Array()
 if (store.has("metadata")) {
+	console.log("Loading old metadata")
 	metadata = store.get("metadata")
 	console.log("Loaded old metadata")
 	makeTable(metadata) // Show right away for launch
@@ -151,7 +152,14 @@ function search() {
 				after = parseInt(searchString.conditionArray[j].value)
 				continue
 			}
-			let tag = metadata[i].common[keyword].toLowerCase()
+			if (metadata[i].hasOwnProperty("common") && metadata[i].common.hasOwnProperty(keyword)) {
+				tag = metadata[i].common[keyword]
+				if (typeof tag === 'string') {
+					tag = tag.toLowerCase()
+				} else {
+					tag = tag.toString()
+				}
+			}
 			query = searchString.conditionArray[j].value
 			if (tag.includes(query) && searchString.conditionArray[j].negated === true) {
 				metadata[i].remove = true
@@ -249,6 +257,7 @@ function getMetadata(dir) {
 	oldmetadata = JSON.parse(JSON.stringify(metadata))
 	metadata.length = 0
 	
+	console.log("Starting walkSync")
 	walkSync(dir, filelist)
 }
 
