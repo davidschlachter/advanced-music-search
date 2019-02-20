@@ -408,8 +408,6 @@ function setHash(filelist) {
 				for (let i=0; i < metadata.length; i++) {
 					if (metadata[i].path === audioFile) {
 						metadata[i].hash = hashText
-						// Be ridiculous and save metadata constantly
-						store.set("metadata", metadata)
 						return setHash(filelist)
 					}
 					if (i === (metadata.length - 1 )) {
