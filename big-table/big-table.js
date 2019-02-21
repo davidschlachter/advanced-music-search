@@ -115,6 +115,16 @@ window.BigTable = (function (window, BigList) {
       header.classList.add('big-table__header');
       header.style.overflow = 'hidden';
       
+      // Checkbox and play button headers
+      let firstheader = document.createElement('div')
+      firstheader.classList.add('big-table__col-1')
+      firstheader.classList.add('big-table__col-header')
+      let secondheader = document.createElement('div')
+      secondheader.classList.add('big-table__col-2')
+      secondheader.classList.add('big-table__col-header')
+      header.appendChild(firstheader)
+      header.appendChild(secondheader)
+      
       var classes, cell, cellData;
       for (var i = 0, len = options.columns.length; i < len; i+=1) {
         classes = getCellClasses(i);
@@ -151,6 +161,28 @@ window.BigTable = (function (window, BigList) {
     function createRow(ridx) {
       var row = document.createElement('div');
       row.classList.add('big-table__row');
+      
+      // Add playback onclick to row
+      row.setAttribute("id", "m"+options.data[ridx].index)
+      // Add the first two columns
+      let checkcolumn = document.createElement('div')
+      checkcolumn.classList.add('big-table__cell')
+      checkcolumn.classList.add('big-table__col-1')
+      let checkbox = document.createElement('input')
+      checkbox.setAttribute("type", "checkbox")
+      checkbox.setAttribute("id", "c"+options.data[ridx].index)
+      checkcolumn.appendChild(checkbox)
+      row.appendChild(checkcolumn)
+      let playcolumn = document.createElement('div')
+      let playbutton = document.createTextNode("▶")
+      playcolumn.appendChild(playbutton)
+      playcolumn.classList.add('big-table__cell')
+      playcolumn.classList.add('big-table__col-2')
+      playcolumn.setAttribute("id", "p"+options.data[ridx].index)
+      playcolumn.onclick = function (e) {
+          loadTrack(e)
+      }
+      row.appendChild(playcolumn)
       
       var val, classes;
       for (var i = 0, len = options.columns.length; i < len; i+=1) {

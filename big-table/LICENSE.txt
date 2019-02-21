@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2016 Alexey Melnikov
+Portions consisting of project big-table copyright (c) 2016 Alexey Melnikov, otherwise copyright (c) 2019 David Schlachter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

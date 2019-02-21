@@ -12,15 +12,8 @@ const crypto = require('crypto')
 
 // Get the last folder used on launch
 let folder = new String()
-let masterTable = new String()
 let metadata = new Array()
 let oldmetadata = new Array()
-if (store.has("masterTable")) {
-	console.log("Loading masterTable")
-	masterTable = store.get("masterTable")
-	showTable(masterTable)
-	console.log("Done loading and building masterTable")
-}
 if (store.has("shuffle")) {
 	document.getElementById('shuffle').checked = store.get("shuffle")
 }
@@ -28,7 +21,7 @@ if (store.has("metadata")) {
 	console.log("Loading old metadata")
 	metadata = store.get("metadata")
 	console.log("Done loading old metadata")
-	if (!store.has("masterTable")) makeTable(metadata)
+	makeTable(metadata)
 }
 if (store.has("folder")) { // Trigger rescan on launch
 	folder = store.get("folder")
@@ -47,13 +40,13 @@ document.getElementById("search").addEventListener('keydown', function (e) {
 		if (document.getElementById("search").value.length === 0)
 			document.getElementById("search").blur()
 		document.getElementById("search").value = ""
-		showTable(masterTable)
+		makeTable(metadata)
 	}
 })
 document.addEventListener('keydown', function (e) {
 	if (e.key === "Escape") {
 		document.getElementById("search").value = ""
-		showTable(masterTable)
+		makeTable(metadata)
 	} else if (e.key === "/") {
 		window.scrollTo(0,0)
 		document.getElementById("search").focus()
@@ -104,7 +97,7 @@ function showTitle(title) {
 document.getElementById("playThese").addEventListener('click', loadCurrentTracks, false)
 function loadCurrentTracks() {
 	let tracks = new Array()
-	let playbuttons = document.getElementsByClassName("playbutton")
+	let playbuttons = document.getElementsByClassName("big-table__row")
 	for (let i = 0; i < playbuttons.length; i++) {
 		let currentID = playbuttons[i].id.substring(1)
 		tracks.push(metadata[currentID].hash)
@@ -348,8 +341,7 @@ function parseMetadata(filelist) {
 		})
 	} else {
 		console.log("Finished updating metadata")
-		masterTable = makeTable(metadata)
-		store.set("masterTable", masterTable)
+		makeTable(metadata)
 		console.log("Now updating hashes")
 		// Only get hashes for files from which metadata was sucessfully parsed
 		let newFileList = new Array()
@@ -425,21 +417,38 @@ function setHash(filelist) {
 
 // Construct the metadata table
 function makeTable(metadata) {
-	let tbody = ""
-	let str = ""
-	for (let i = 0; i < metadata.length; i++) {
-		let index = "", title = "", artist = "", album = "", bpm = ""
-		if (metadata[i].hasOwnProperty("index")) index = metadata[i].index
-		if (!metadata[i].hasOwnProperty("common")) continue
-		if (metadata[i].common.hasOwnProperty("title")) title = metadata[i].common.title
-		if (metadata[i].common.hasOwnProperty("artist")) artist = metadata[i].common.artist
-		if (metadata[i].common.hasOwnProperty("album")) album = metadata[i].common.album
-		if (metadata[i].common.hasOwnProperty("bpm")) bpm = metadata[i].common.bpm
-		str = "<tr><td class=playbutton id=m" + index + ">▶</td><td>" + title+"</td><td>" + artist + "</td><td>" + album + "</td><td>" + bpm + "</td></tr>"
-		tbody = tbody + str
-	}
-	showTable(tbody)
-	return tbody
+	let table = new BigTable({
+		container: '#listing',
+		data: metadata,
+		height: (window.innerHeight-(96+80+9.6+9.6))-76, // Somehow always 76px more than specified
+		itemHeight: 40,
+		columns: [
+			{
+				title: "Title",
+				type: String,
+				key: "title",
+				css: {'big-table__col-3': true}
+			},
+			{
+				title: "Artist",
+				type: String,
+				key: "artist",
+				css: {'big-table__col-4': true}
+			},
+			{
+				title: "Album",
+				type: String,
+				key: "album",
+				css: {'big-table__col-5': true}
+			},
+			{
+				title: "BPM",
+				type: Number,
+				key: "bpm",
+				css: {'big-table__col-6': true}
+			}
+		]
+	})
 }
 
 // Just show a previously generated table

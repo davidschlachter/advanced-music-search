@@ -86,18 +86,26 @@
  */
 
 .big-table__col-1 {
-  width: 30%;
+  width: 5%;
 }
 
 .big-table__col-2 {
-  width: 30%;
+  width: 5%;
 }
 
 .big-table__col-3 {
-  width: 30%;
+  width: 26%;
 }
 
 .big-table__col-4 {
+  width: 26%;
+}
+
+.big-table__col-5 {
+  width: 26%;
+}
+
+.big-table__col-6 {
   width: 10%;
 }
 /*

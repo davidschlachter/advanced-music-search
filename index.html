@@ -5,29 +5,15 @@
 		<title>advanced-music-search</title>
 		<meta http-equiv="Content-Security-Policy" content="default-src 'self';">
 		<link rel="stylesheet" href="style.css">
+		<link rel="stylesheet" href="big-table/theme.default.css">
 	</head>
 	<body>
 		<header>
 			<input id=search type="text" name="search" autofocus autocomplete=off placeholder="Search e.g. artist:goodman -artist:krupa bpm>200 complete jazz">
 			<p id=status></p>
 		</header>
-		<div id=help></div>
 		
-		<div id=listing>
-			<table id=table>
-				<colgroup>
-					<col id="playbuttons">
-					<col id="title">
-					<col id="artist">
-					<col id="album">
-					<col id="bpm">
-				</colgroup>
-				<thead>
-					<tr><th></th><th>Title</th><th>Artist</th><th>Album</th><th>BPM</th></tr>
-				</thead>
-				<tbody id=tbody></tbody>
-			</table>
-		</div>
+		<div id=listing></div>
 		
 		<footer>
 			<audio id=audio controls>
@@ -38,6 +24,9 @@
 			</div>
 		</footer>
 		
+		<script src="big-table/polyfills.js"></script>
+		<script src="big-table/big-list.js"></script>
+		<script src="big-table/big-table.js"></script>
 		<script src="ams.js"></script>
 	</body>
 </html>
