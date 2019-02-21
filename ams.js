@@ -1,4 +1,3 @@
-const mm = require('music-metadata')
 const Store = require('electron-store')
 const store = new Store()
 const SearchString = require('search-string')
@@ -23,7 +22,7 @@ if (store.has("shuffle")) {
 if (store.has("metadata")) {
 	console.log("Loading old metadata")
 	metadata = store.get("metadata")
-	console.log("Done loading old metadata")
+	console.log("Finished loading old metadata")
 	makeTable(metadata)
 }
 if (store.has("folder")) { // Trigger rescan on launch
@@ -82,7 +81,7 @@ function saveShuffleState() {
 	store.set("shuffle", document.getElementById('shuffle').checked)
 }
 // Next and previous buttons
-document.getElementById("next").addEventListener('click', loadCurrentTracks, false)
+document.getElementById("next").addEventListener('click', playNextTrack, false)
 function playNextTrack() {
 	if (document.getElementById('audiosrc').src === "") {
 		loadCurrentTracks()
@@ -92,9 +91,9 @@ function playNextTrack() {
 		document.getElementById('audio').currentTime = document.getElementById('audio').duration
 	}
 }
-// Currently playing listener
+// Currently playing text
 function showTitle(title) {
-	document.getElementById("status").innerHTML = title
+	document.getElementById("status").textContent = title
 }
 // Play currently listed tracks
 document.getElementById("playThese").addEventListener('click', loadCurrentTracks, false)
@@ -144,7 +143,7 @@ function search() {
 	let results = new Array()
 	const str = document.getElementById("search").value.toLowerCase()
 	const searchString = SearchString.parse(str)
-	console.log(searchString)
+	console.log("searchString", searchString)
 	let tag = "", query = "", tSearch = "", before = 0, after = 0, bpmlow = 0, bpmhigh = 0
 	// For each metadata item, check if the search query matches
 	for (let i = 0; i < metadata.length; i++) {
@@ -249,12 +248,11 @@ document.addEventListener('drop', function (e) {
 	document.getElementById("search").value = ""
 	e.preventDefault()
 	e.stopPropagation()
-	for (let f of e.dataTransfer.files) {
-		let folder = f.path
-		store.set("folder", folder)
-		getMetadata(folder)
-		document.getElementById("status").innerHTML = "Loaded " + folder
-	}
+	// Only accept one source directory (for now)
+	let folder = e.dataTransfer.files[0].path
+	store.set("folder", folder)
+	getMetadata(folder)
+	document.getElementById("status").innerHTML = "Loaded " + folder
 })
 document.addEventListener('dragover', function (e) {
 	e.preventDefault()
@@ -347,17 +345,16 @@ function parseMetadata(filelist) {
 			return parseMetadata(filelist)
 		})
 	} else {
-		console.log("Finished updating metadata")
+		console.log("Finished updating metadata, metadata is now", metadata)
 		parsingMetadata = false
 		makeTable(metadata)
 		console.log("Now updating hashes")
-		// Only get hashes for files from which metadata was sucessfully parsed
 		let newFileList = new Array()
 		for (let i=0; i<metadata.length; i++) {
 			newFileList.push(metadata[i].path)
 		}
 		filelist = JSON.parse(JSON.stringify(newFileList))
-		store.set("metadata", metadata) // don't rescan if hashing fails
+		store.set("metadata", metadata)
 		setHash(filelist)
 	}
 }
@@ -376,7 +373,7 @@ function setHash(filelist) {
 					}
 				}
 			}
-			let stream = fs.createReadStream(audioFile, {start: 0})
+			let stream = fs.createReadStream(audioFile)
 			let parser = new MP4Parser.default(stream)
 			let hash = crypto.createHash('sha1')
 			hash.setEncoding('hex')
@@ -414,7 +411,7 @@ function setHash(filelist) {
 			})*/
 			parser.start()
 		} else {
-			console.log("Finished updating hashes")
+			console.log("Finished updating hashes, metadata is now:", metadata)
 			hashingFiles = false
 			store.set("metadata", metadata)
 		}
@@ -426,10 +423,10 @@ function setHash(filelist) {
 }
 
 // Construct the metadata table
-function makeTable(metadata) {
+function makeTable(data) {
 	let table = new BigTable({
 		container: '#listing',
-		data: metadata,
+		data: data,
 		height: (window.innerHeight-(96+80+9.6+9.6))-76, // Somehow always 76px more than specified
 		itemHeight: 40,
 		columns: [
@@ -459,18 +456,10 @@ function makeTable(metadata) {
 			}
 		]
 	})
+	currentlyShown = data
 }
 
-// Just show a previously generated table
-function showTable(tbody) {
-	document.getElementById("tbody").innerHTML = tbody
-	let playbuttons = document.getElementsByClassName("playbutton")
-	for (let i = 0; i < playbuttons.length; i++) {
-		playbuttons[i].addEventListener('click', loadTrack, false)
-	}
-}
-
-// Load a track to the deck
+// Load a track to the deck (used by play buttons)
 function loadTrack(e) {
 	trackid = parseInt(e.srcElement.id.substring(1))
 	document.getElementById('audiosrc').src = metadata[trackid].path
