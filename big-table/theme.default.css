@@ -21,7 +21,7 @@
 .big-table__col-header {
   float: left;
   box-sizing: border-box;
-  padding: 10px 15px;
+  padding: 5px 10px;
 }
 
 /* Column header modificators */
@@ -61,7 +61,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 10px 15px;
+  padding: 1px 5px;
   height: 100%;
 }
 

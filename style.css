@@ -1,5 +1,6 @@
 body {
 	text-align: center;
+	font: caption;
 }
 header {
 	position: fixed;
@@ -34,5 +35,6 @@ footer {
 	margin-bottom: 0.6em;
 }
 #listing {
-	margin:89.6px 0 105.6px 0; /* height+padding of footer */
+	margin:88px 0 105.6px 0; /* height+padding of footer */
+	font-size: 13px;
 }

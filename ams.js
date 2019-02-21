@@ -416,8 +416,8 @@ function makeTable(data) {
 	let table = new BigTable({
 		container: '#listing',
 		data: data,
-		height: (window.innerHeight-(96+80+9.6+9.6))-76, // Somehow always 76px more than specified
-		itemHeight: 40,
+		height: (window.innerHeight-(96+80+9.6+9.6))-23, // Somehow always 76px more than specified
+		itemHeight: 20,
 		columns: [
 			{
 				title: "Title",
