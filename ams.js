@@ -14,6 +14,8 @@ const crypto = require('crypto')
 let folder = new String()
 let metadata = new Array()
 let oldmetadata = new Array()
+let parsingMetadata = false
+let hashingFiles = false
 let currentlyShown = {}
 if (store.has("shuffle")) {
 	document.getElementById('shuffle').checked = store.get("shuffle")
@@ -302,6 +304,7 @@ function walkSync (dir, filelist) {
 
 // Run parser on files to get metadata (recursive)
 function parseMetadata(filelist) {
+	parsingMetadata = true
 	const audioFile = filelist.shift()
 	
 	if (audioFile) {
@@ -333,12 +336,19 @@ function parseMetadata(filelist) {
 			data.path = audioFile
 			data.index = metadata.length
 			data.mtime = JSON.parse(JSON.stringify(mtime))
+			if (!data.hasOwnProperty("title")) data.title = ""
+			if (!data.hasOwnProperty("album")) data.album = ""
+			if (!data.hasOwnProperty("artist")) data.artist = ""
+			if (!data.hasOwnProperty("bpm")) data.bpm = "" // BPM and year shouldn't really be strings
+			if (!data.hasOwnProperty("year")) data.year = ""
+			if (!data.hasOwnProperty("albumartist")) data.albumartist = ""
 			metadata.push(data)
 			console.log("New/updated metadata for:", audioFile)
 			return parseMetadata(filelist)
 		})
 	} else {
 		console.log("Finished updating metadata")
+		parsingMetadata = false
 		makeTable(metadata)
 		console.log("Now updating hashes")
 		// Only get hashes for files from which metadata was sucessfully parsed
@@ -354,6 +364,7 @@ function parseMetadata(filelist) {
 
 // Calculate SHA1 hashes of mdat stream of each audio file (serves as unique identifier for playlists)
 function setHash(filelist) {
+	hashingFiles = true
 	const audioFile = filelist.shift()
 	try {
 		if (audioFile) {
@@ -404,6 +415,7 @@ function setHash(filelist) {
 			parser.start()
 		} else {
 			console.log("Finished updating hashes")
+			hashingFiles = false
 			store.set("metadata", metadata)
 		}
 	} catch(error) {
@@ -470,9 +482,13 @@ function loadTrack(e) {
 // Extremely hacky but seems to be only way to catch buffer boundsError...
 process.on('uncaughtException',function(error){
 	console.log("uncaughtException global handler got:", error)
-	if (error.message.includes("value of \"offset\" is out of range")) {
+	if (parsingMetadata) {
+		console.log("Returning to parseMetadata")
+		parseMetadata(filelist)
+	} else if (hashingFiles) {
+		console.log("Returning to setHash")
 		setHash(filelist)
 	} else {
-		console.log("Not an offset error, so not calling setHash")
+		console.log("Not in parseMetadata or setHash, nothing to do")
 	}
 })
