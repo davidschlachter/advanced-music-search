@@ -7,6 +7,7 @@ const fs = require('fs')
 const MP4Parser = require('mp4parser')
 const mp4dashparser = require('mp4-parser')
 const crypto = require('crypto')
+const recursive = require("recursive-readdir")
 
 
 // Get the last folder used on launch
@@ -267,38 +268,28 @@ function getMetadata(dir) {
 	oldmetadata = JSON.parse(JSON.stringify(metadata))
 	metadata.length = 0
 	
-	console.log("Starting walkSync")
-	walkSync(dir, filelist)
-}
-
-// List all files recursively
-// https://gist.github.com/kethinov/6658166#gistcomment-1921157
-function walkSync (dir, filelist) {
-	const files = fs.readdirSync(dir)
-	filelist = filelist || []
-	files.forEach(function(file) {
-	if (fs.statSync(path.join(dir, file)).isDirectory()) {
-		filelist = walkSync(path.join(dir, file), filelist)
-	}
-	else {
-		filelist.push(path.join(dir, file))
-	}
-	})
-	
-	if (store.get("folder") === dir) { // If finishing top-level walkSync
-		let newlist = new Array()
-		for (let i=0; i<filelist.length;i++) {
-			if (filelist[i].includes(".m4a") || filelist[i].includes(".mp4")) {
-				newlist.push(filelist[i])
+	console.log("Starting recursive")
+	recursive(dir, ["*.mp3", "*.jpg", "*.itc"], function (err, filelist) {
+		if (err) console.log("Error in recursive:", err)
+		if (filelist) {
+			let newlist = new Array()
+			for (let i=0; i<filelist.length;i++) {
+				if (filelist[i].includes(".m4a") || filelist[i].includes(".mp4")) {
+					newlist.push(filelist[i])
+				}
+			}
+			filelist = newlist
+			window.filelist = JSON.parse(JSON.stringify(filelist))
+			if (filelist.length === 0) {
+				console.log("Error: no files in filelist. Stopping scan.")
+			} else {
+				console.log("Finished recursive, filelist.length:", filelist.length, "filelist", filelist)
+				parseMetadata(filelist)
 			}
 		}
-		filelist = newlist
-		window.filelist = JSON.parse(JSON.stringify(filelist))
-		console.log("Finished walkSync")
-		parseMetadata(filelist)
-	}
-	return filelist
+	})
 }
+
 
 // Run parser on files to get metadata (recursive)
 function parseMetadata(filelist) {

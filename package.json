@@ -16,6 +16,7 @@
     "electron-store": "^2.0.0",
     "mp4-parser": "git+https://github.com/davidschlachter/mp4-info-parser.git",
     "mp4parser": "^1.0.2",
+    "recursive-readdir": "^2.2.2",
     "search-string": "^3.1.0"
   }
 }
