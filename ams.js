@@ -129,7 +129,9 @@ function loadCurrentTracks() {
 
 	function actualResizeHandler() {
 		console.log("Resizing with makeTable")
-		makeTable(currentlyShown)
+		if (document.getElementById("listing").style.display === "block") { // only resize if table is visible
+			makeTable(currentlyShown)
+		}
 	}
 }())
 
