@@ -61,7 +61,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 1px 5px;
+  padding: 1px 0;
   height: 100%;
 }
 
@@ -86,27 +86,27 @@
  */
 
 .big-table__col-1 {
-  width: 5%;
+  width: 20px;
 }
 
 .big-table__col-2 {
-  width: 5%;
+  width: 20px;
 }
 
 .big-table__col-3 {
-  width: 26%;
+  width: calc((100% - (20px + 20px + 50px)) / 3);
 }
 
 .big-table__col-4 {
-  width: 26%;
+  width: calc((100% - (20px + 20px + 50px)) / 3);
 }
 
 .big-table__col-5 {
-  width: 26%;
+  width: calc((100% - (20px + 20px + 50px)) / 3);
 }
 
 .big-table__col-6 {
-  width: 10%;
+  width: 50px;
 }
 /*
 .big-table__col-1 {
