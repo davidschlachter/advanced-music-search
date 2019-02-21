@@ -465,6 +465,7 @@ function makeTable(data) {
 				title: "Title",
 				type: String,
 				key: "title",
+				sorted: true,
 				css: {'big-table__col-3': true}
 			},
 			{

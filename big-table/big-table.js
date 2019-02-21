@@ -274,7 +274,7 @@ window.BigTable = (function (window, BigList) {
 
       for (i = 0; i < len; i+=1) {
         child = children[i];
-        if (i === idx) {
+        if (i === idx+2) {
           child.classList.remove('big-table__col-header_sorted-asc', 'big-table__col-header_sorted-desc');
           child.classList.add('big-table__col-header_sorted', desc ? 'big-table__col-header_sorted-desc' : 'big-table__col-header_sorted-asc');
         } else {
