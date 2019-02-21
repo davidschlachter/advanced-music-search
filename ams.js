@@ -312,7 +312,6 @@ function parseMetadata(filelist) {
 		for (let i=0; i < oldmetadata.length; i++) {
 			if (oldmetadata[i].path === audioFile) {
 				if (oldmetadata[i].mtime === JSON.parse(JSON.stringify(mtime))) {
-					oldmetadata[i].index = metadata.length
 					metadata.push(oldmetadata[i])
 					return parseMetadata(filelist)
 				}
@@ -332,7 +331,6 @@ function parseMetadata(filelist) {
 		})
 		parser.on('end', function () {
 			data.path = audioFile
-			data.index = metadata.length
 			data.mtime = JSON.parse(JSON.stringify(mtime))
 			if (!data.hasOwnProperty("title")) data.title = ""
 			if (!data.hasOwnProperty("album")) data.album = ""
@@ -346,6 +344,11 @@ function parseMetadata(filelist) {
 		})
 	} else {
 		console.log("Finished updating metadata, metadata is now", metadata)
+		console.log("Updating indices")
+		for (let k=0; k<metadata.length; k++) {
+			metadata[k].index = k
+		}
+		console.log("Finished updating indices")
 		parsingMetadata = false
 		makeTable(metadata)
 		console.log("Now updating hashes")
