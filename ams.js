@@ -14,6 +14,7 @@ const crypto = require('crypto')
 let folder = new String()
 let metadata = new Array()
 let oldmetadata = new Array()
+let currentlyShown = {}
 if (store.has("shuffle")) {
 	document.getElementById('shuffle').checked = store.get("shuffle")
 }
@@ -97,12 +98,9 @@ function showTitle(title) {
 document.getElementById("playThese").addEventListener('click', loadCurrentTracks, false)
 function loadCurrentTracks() {
 	let tracks = new Array()
-	let playbuttons = document.getElementsByClassName("big-table__row")
-	for (let i = 0; i < playbuttons.length; i++) {
-		let currentID = playbuttons[i].id.substring(1)
-		tracks.push(metadata[currentID].hash)
+	for (let i = 0; i < currentlyShown.length; i++) {
+		tracks.push(currentlyShown[i].hash)
 	}
-	
 	playByHashes(tracks)
 }
 
