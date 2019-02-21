@@ -133,6 +133,7 @@ function playByHashes(hashes) {
 	if (path === "") return playByHashes(hashes)
 	document.getElementById('audiosrc').src = path
 	document.getElementById('audio').load()
+	updateNowPlaying(hash)
 	let playPromise = document.getElementById('audio').play()
 	showTitle(title)
 	playPromise.then(function() {
@@ -142,6 +143,21 @@ function playByHashes(hashes) {
 	}).catch(function(error) {
 		console.log("Playback promise returned error", error)
 	})
+}
+
+// Update 'now playing'
+function updateNowPlaying(hash) {
+	window.nowPlaying = hash
+	let rows = document.getElementsByClassName('big-table__row')
+	for (let i=0; i<rows.length; i++) {
+		let item = rows[i]
+		let itemhash = item.id.substring(1)
+		if (itemhash === hash) {
+			item.classList.add("nowplaying")
+		} else {
+			item.classList.remove("nowplaying")
+		}
+	}
 }
 
 // Search function
@@ -488,6 +504,7 @@ function loadTrack(e) {
 	if (source === "") return showTitle("Error: could not load track. No matching hash.")
 	document.getElementById('audiosrc').src = source
 	document.getElementById('audio').load()
+	updateNowPlaying(trackhash)
 	document.getElementById('audio').play()
 	showTitle(title)
 }

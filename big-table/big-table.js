@@ -184,6 +184,10 @@ window.BigTable = (function (window, BigList) {
       }
       row.appendChild(playcolumn)
       
+      if (window.hasOwnProperty("nowPlaying") && window.nowPlaying === options.data[ridx].hash) {
+          row.classList.add('nowplaying')
+      }
+	  
       var val, classes;
       for (var i = 0, len = options.columns.length; i < len; i+=1) {
         val = options.columns[i].key ? options.data[ridx][options.columns[i].key] : null;
