@@ -35,7 +35,7 @@ if (store.has("folder")) { // Trigger rescan on launch
 	getMetadata(folder)
 	document.getElementById("status").innerHTML = "Loaded " + folder
 } else {
-	document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
+	//document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
 }
 
 
@@ -129,7 +129,7 @@ function playByHashes(hashes) {
 	for (let i=0; i<metadata.length; i++) {
 		if (metadata[i].hash === hash) {
 			path = metadata[i].path
-			title = metadata[i].common.title
+			title = metadata[i].title
 		}
 	}
 	if (path === "") return playByHashes(hashes)
@@ -171,8 +171,8 @@ function search() {
 				after = parseInt(searchString.conditionArray[j].value)
 				continue
 			}
-			if (metadata[i].hasOwnProperty("common") && metadata[i].common.hasOwnProperty(keyword)) {
-				tag = metadata[i].common[keyword]
+			if (metadata[i].hasOwnProperty(keyword)) {
+				tag = metadata[i][keyword]
 				if (typeof tag === 'string') {
 					tag = tag.toLowerCase()
 				} else {
@@ -187,14 +187,14 @@ function search() {
 			}
 		}
 		// Construct the string to match against text queries
-		if (metadata[i].common.hasOwnProperty("title"))
-			tSearch  = metadata[i].common.title.toString() + " "
-		if (metadata[i].common.hasOwnProperty("artist"))
-			tSearch += metadata[i].common.artist.toString() + " "
-		if (metadata[i].common.hasOwnProperty("album"))
-			tSearch += metadata[i].common.album.toString() + " "
-		if (metadata[i].common.hasOwnProperty("albumartist"))
-			tSearch += metadata[i].common.albumartist.toString() + " "
+		if (metadata[i].hasOwnProperty("title"))
+			tSearch  = metadata[i].title.toString() + " "
+		if (metadata[i].hasOwnProperty("artist"))
+			tSearch += metadata[i].artist.toString() + " "
+		if (metadata[i].hasOwnProperty("album"))
+			tSearch += metadata[i].album.toString() + " "
+		if (metadata[i].hasOwnProperty("albumartist"))
+			tSearch += metadata[i].albumartist.toString() + " "
 		tSearch = tSearch.toLowerCase()
 		// Alternate before/after synthax and bpm search
 		for (let j = 0; j < searchString.textSegments.length; j++) {
@@ -212,21 +212,21 @@ function search() {
 			}
 		}
 		// Date searching
-		if (before > 0 && metadata[i].common.hasOwnProperty("year")) {
-			if (metadata[i].common.year > before)
+		if (before > 0 && metadata[i].hasOwnProperty("year")) {
+			if (metadata[i].year > before)
 				metadata[i].remove = true
 		}
-		if (after > 0 && metadata[i].common.hasOwnProperty("year")) {
-			if (metadata[i].common.year < after)
+		if (after > 0 && metadata[i].hasOwnProperty("year")) {
+			if (metadata[i].year < after)
 				metadata[i].remove = true
 		}
 		// BPM search
-		if (bpmlow > 0 && metadata[i].common.hasOwnProperty("bpm")) {
-			if (metadata[i].common.bpm < bpmlow)
+		if (bpmlow > 0 && metadata[i].hasOwnProperty("bpm")) {
+			if (metadata[i].bpm < bpmlow)
 				metadata[i].remove = true
 		}
-		if (bpmhigh > 0 && metadata[i].common.hasOwnProperty("bpm")) {
-			if (metadata[i].common.bpm > bpmhigh)
+		if (bpmhigh > 0 && metadata[i].hasOwnProperty("bpm")) {
+			if (metadata[i].bpm > bpmhigh)
 				metadata[i].remove = true
 		}
 		// Match text queries against common metadata fields
@@ -326,39 +326,25 @@ function parseMetadata(filelist) {
 				}
 			}
 		}
-		// Otherwise, 
-		return mm.parseFile(audioFile).then(data => {
+		// Otherwise,
+		let stream = fs.createReadStream(audioFile)
+		let parser = stream.pipe(new mp4dashparser())
+		let data = {}
+		parser.on('data', function(tag){
+			if (tag.type === "aART") {data.albumartist = tag.value}
+			if (tag.type === "�ART") {data.artist = tag.value}
+			if (tag.type === "�alb") {data.album = tag.value}
+			if (tag.type === "�day") {data.year = tag.value}
+			if (tag.type === "�nam") {data.title = tag.value}
+			if (tag.type === "tmpo") {data.bpm = tag.value}
+		})
+		parser.on('end', function () {
 			data.path = audioFile
 			data.index = metadata.length
-			if (data.common.hasOwnProperty("picture")) data.common.picture.length = 0
-			if (data.hasOwnProperty("format")) data.format.length = 0
 			data.mtime = JSON.parse(JSON.stringify(mtime))
 			metadata.push(data)
-			console.log("New/updated metadata for: "+data.path)
+			console.log("New/updated metadata for:", audioFile)
 			return parseMetadata(filelist)
-		}, reason => {
-			// Try another parser
-			let stream = fs.createReadStream(audioFile)
-			let parser = stream.pipe(new mp4dashparser())
-			data = {}
-			data.common = {}
-			parser.on('data', function(tag){
-				if (tag.type === "aART") {data.common.albumartist = tag.value}
-				if (tag.type === "�ART") {data.common.artist = tag.value}
-				if (tag.type === "�alb") {data.common.album = tag.value}
-				if (tag.type === "�day") {data.common.year = tag.value}
-				if (tag.type === "�nam") {data.common.title = tag.value}
-				if (tag.type === "tmpo") {data.common.bpm = tag.value}
-			})
-			parser.on('end', function () {
-				data.path = audioFile
-				data.index = metadata.length
-				data.mtime = JSON.parse(JSON.stringify(mtime))
-				//data.error = true
-				metadata.push(data)
-				console.log("Second try data:", data, "file", audioFile, "first try error", reason)
-				return parseMetadata(filelist)
-			})
 		})
 	} else {
 		console.log("Finished updating metadata")
@@ -411,7 +397,7 @@ function setHash(filelist) {
 						return setHash(filelist)
 					}
 					if (i === (metadata.length - 1 )) {
-						console.log("Error: file not in metadata", audiofile)
+						console.log("Error: file not in metadata", audioFile)
 						return setHash(filelist)
 					}
 				}
@@ -471,7 +457,7 @@ function loadTrack(e) {
 	document.getElementById('audiosrc').src = metadata[trackid].path
 	document.getElementById('audio').load()
 	document.getElementById('audio').play()
-	showTitle(metadata[trackid].common.title)
+	showTitle(metadata[trackid].title)
 }
 
 // Extremely hacky but seems to be only way to catch buffer boundsError...
