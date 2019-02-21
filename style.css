@@ -69,3 +69,6 @@ footer {
 .nowplaying {
 	background-color:#ffffe2;
 }
+.big-table__col-2 {
+	user-select: none;
+}
