@@ -255,6 +255,7 @@ document.addEventListener('drop', function (e) {
 	metadata.length = 0
 	document.getElementById("firstrun").style.display = "none"
 	document.getElementById("dragover").style.display = "none"
+	document.getElementById("listing").style.display = "none"
 	document.getElementById("search").value = ""
 	// Only accept one source directory (for now)
 	let folder = e.dataTransfer.files[0].path
@@ -437,6 +438,7 @@ function setHash() {
 
 // Construct the metadata table
 function makeTable(data) {
+	document.getElementById("listing").style.display = "block"
 	let table = new BigTable({
 		container: '#listing',
 		data: data,

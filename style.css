@@ -43,6 +43,7 @@ footer {
 	font-size: 200%;
 }
 #dragover {
+	z-index:1;
 	pointer-events: none;
 	background-color: blue;
 	color: white;
