@@ -341,7 +341,7 @@ function parseMetadata(filelist) {
 			if (!data.hasOwnProperty("year")) data.year = ""
 			if (!data.hasOwnProperty("albumartist")) data.albumartist = ""
 			metadata.push(data)
-			console.log("New/updated metadata for:", audioFile)
+			console.log("metadata.length", metadata.length, "New/updated metadata for:", audioFile)
 			return parseMetadata(filelist)
 		})
 	} else {
@@ -353,23 +353,23 @@ function parseMetadata(filelist) {
 		for (let i=0; i<metadata.length; i++) {
 			newFileList.push(metadata[i].path)
 		}
-		filelist = JSON.parse(JSON.stringify(newFileList))
+		window.filelist = JSON.parse(JSON.stringify(newFileList))
 		store.set("metadata", metadata)
-		setHash(filelist)
+		setHash()
 	}
 }
 
 // Calculate SHA1 hashes of mdat stream of each audio file (serves as unique identifier for playlists)
-function setHash(filelist) {
+function setHash() {
 	hashingFiles = true
-	const audioFile = filelist.shift()
+	const audioFile = window.filelist.shift()
 	try {
 		if (audioFile) {
 			let mtime = new Date(fs.statSync(audioFile).mtime)
 			for (let i=0; i < metadata.length; i++) {
 				if (metadata[i].path === audioFile) {
 					if (metadata[i].mtime === JSON.parse(JSON.stringify(mtime)) && metadata[i].hasOwnProperty("hash")) {
-						return setHash(filelist)
+						return setHash()
 					}
 				}
 			}
@@ -388,15 +388,15 @@ function setHash(filelist) {
 			stream.on('end', () => {
 				hash.end()
 				hashText = hash.read()
-				console.log("New/updated hash for", audioFile, hashText)
+				console.log("filelist.length", filelist.length, "New/updated hash for", audioFile, hashText)
 				for (let i=0; i < metadata.length; i++) {
 					if (metadata[i].path === audioFile) {
 						metadata[i].hash = hashText
-						return setHash(filelist)
+						return setHash()
 					}
 					if (i === (metadata.length - 1 )) {
 						console.log("Error: file not in metadata", audioFile)
-						return setHash(filelist)
+						return setHash()
 					}
 				}
 			})
@@ -417,7 +417,7 @@ function setHash(filelist) {
 		}
 	} catch(error) {
 		console.log("Caught an error in setHash", error)
-		return setHash(filelist)
+		return setHash()
 	}
 	
 }
@@ -471,12 +471,14 @@ function loadTrack(e) {
 // Extremely hacky but seems to be only way to catch buffer boundsError...
 process.on('uncaughtException',function(error){
 	console.log("uncaughtException global handler got:", error)
+	console.log("filelist.length", filelist.length, "filelist[0]", filelist[0])
 	if (parsingMetadata) {
 		console.log("Returning to parseMetadata")
 		parseMetadata(filelist)
 	} else if (hashingFiles) {
 		console.log("Returning to setHash")
-		setHash(filelist)
+		console.log("window.filelist.length", window.filelist.length, "window.filelist[0]", window.filelist[0])
+		setHash()
 	} else {
 		console.log("Not in parseMetadata or setHash, nothing to do")
 	}
