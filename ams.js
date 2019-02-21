@@ -111,6 +111,28 @@ function loadCurrentTracks() {
 	playByHashes(tracks)
 }
 
+// Update table (height) on window resize
+// https://developer.mozilla.org/en-US/docs/Web/Events/resize#setTimeout
+(function() {
+	window.addEventListener("resize", resizeThrottler, false)
+	var resizeTimeout
+	function resizeThrottler() {
+		// ignore resize events as long as an actualResizeHandler execution is in the queue
+		if ( !resizeTimeout ) {
+			resizeTimeout = setTimeout(function() {
+				resizeTimeout = null
+				actualResizeHandler()
+				// The actualResizeHandler will execute at a rate of 3fps
+			}, 1000)
+		}
+	}
+
+	function actualResizeHandler() {
+		console.log("Resizing with makeTable")
+		makeTable(currentlyShown)
+	}
+}())
+
 // Play by hashes
 function playByHashes(hashes) {
 	if (hashes.length === 0) return
