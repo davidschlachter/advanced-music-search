@@ -30,7 +30,7 @@ if (store.has("folder")) { // Trigger rescan on launch
 	getMetadata(folder)
 	document.getElementById("folder").textContent = folder
 } else {
-	//document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
+	document.getElementById("firstrun").style.display = "block"
 }
 
 
@@ -250,20 +250,30 @@ function search() {
 
 // Process new folder dropped into window
 document.addEventListener('drop', function (e) {
+	console.log("Handling the drop")
+	dragcounter = 0
 	metadata.length = 0
+	document.getElementById("firstrun").style.display = "none"
+	document.getElementById("dragover").style.display = "none"
 	document.getElementById("search").value = ""
-	e.preventDefault()
-	e.stopPropagation()
 	// Only accept one source directory (for now)
 	let folder = e.dataTransfer.files[0].path
 	store.set("folder", folder)
 	getMetadata(folder)
 	document.getElementById("folder").textContent = folder
-})
-document.addEventListener('dragover', function (e) {
 	e.preventDefault()
 	e.stopPropagation()
 })
+document.addEventListener('dragover', function (e) {
+	document.getElementById("dragover").style.display = "block"
+	e.preventDefault()
+})
+document.addEventListener('dragleave', function (e) {
+	document.getElementById("dragover").style.display = "none"
+	e.preventDefault()
+})
+
+
 
 // Get metadata parent function
 function getMetadata(dir) {
@@ -273,6 +283,7 @@ function getMetadata(dir) {
 	oldmetadata = JSON.parse(JSON.stringify(metadata))
 	metadata.length = 0
 	
+	document.getElementById("splash").style.display = "block"
 	document.getElementById("xpercent").style.width = "1%"
 	document.getElementById("step").textContent = "listing files to scan…"
 	recursive(dir, ["*.mp3", "*.jpg", "*.itc"], function (err, filelist) {
@@ -412,6 +423,7 @@ function setHash() {
 			document.getElementById("step").textContent = "making table…"
 			document.getElementById("splash").style.display = "none"
 			makeTable(metadata)
+			document.getElementById("search").disabled = false
 			console.log("Finished updating hashes, metadata is now:", metadata)
 			hashingFiles = false
 			store.set("metadata", metadata)

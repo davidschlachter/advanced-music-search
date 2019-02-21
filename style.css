@@ -34,9 +34,23 @@ footer {
 	width: 80%;
 	margin-bottom: 0.6em;
 }
-#splash {
+#splash, #firstrun, #dragover {
 	margin: 88px auto 105.6px auto;
 	padding: 2em;
+	display: none;
+}
+#firstrun p, #dragover p {
+	font-size: 200%;
+}
+#dragover {
+	pointer-events: none;
+	background-color: blue;
+	color: white;
+	height: 100%;
+	width:100%;
+	position:fixed;
+	top:0;
+	left:0;
 }
 #hundredpercent {
 	width: 100%;

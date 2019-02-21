@@ -9,9 +9,17 @@
 	</head>
 	<body>
 		<header>
-			<input id=search type="text" name="search" autofocus autocomplete=off placeholder="Search e.g. artist:goodman -artist:krupa bpm>200 complete jazz">
+			<input disabled id=search type="text" name="search" autofocus autocomplete=off placeholder="Search e.g. artist:goodman -artist:krupa bpm>200 complete jazz">
 			<p id=status></p>
 		</header>
+		
+		<div id=firstrun>
+			<p>Drag your music folder into this window to get started.</p>
+		</div>
+		
+		<div id="dragover">
+			<p>Drop your music folder into this window to get started!</p>
+		</div>
 		
 		<div id=splash>
 			<p>Loading your library in: <span id=folder>&nbsp;</span></p>
