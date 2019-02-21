@@ -163,14 +163,14 @@ window.BigTable = (function (window, BigList) {
       row.classList.add('big-table__row');
       
       // Add playback onclick to row
-      row.setAttribute("id", "m"+options.data[ridx].index)
+      row.setAttribute("id", "r"+options.data[ridx].hash)
       // Add the first two columns
       let checkcolumn = document.createElement('div')
       checkcolumn.classList.add('big-table__cell')
       checkcolumn.classList.add('big-table__col-1')
       let checkbox = document.createElement('input')
       checkbox.setAttribute("type", "checkbox")
-      checkbox.setAttribute("id", "c"+options.data[ridx].index)
+      checkbox.setAttribute("id", "c"+options.data[ridx].hash)
       checkcolumn.appendChild(checkbox)
       row.appendChild(checkcolumn)
       let playcolumn = document.createElement('div')
@@ -178,7 +178,7 @@ window.BigTable = (function (window, BigList) {
       playcolumn.appendChild(playbutton)
       playcolumn.classList.add('big-table__cell')
       playcolumn.classList.add('big-table__col-2')
-      playcolumn.setAttribute("id", "p"+options.data[ridx].index)
+      playcolumn.setAttribute("id", "p"+options.data[ridx].hash)
       playcolumn.onclick = function (e) {
           loadTrack(e)
       }

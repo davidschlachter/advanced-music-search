@@ -24,7 +24,6 @@ if (store.has("metadata")) {
 	console.log("Loading old metadata")
 	metadata = store.get("metadata")
 	console.log("Finished loading old metadata")
-	makeTable(metadata)
 }
 if (store.has("folder")) { // Trigger rescan on launch
 	folder = store.get("folder")
@@ -336,13 +335,7 @@ function parseMetadata() {
 		})
 	} else {
 		console.log("Finished updating metadata, metadata is now", metadata)
-		console.log("Updating indices")
-		for (let k=0; k<metadata.length; k++) {
-			metadata[k].index = k
-		}
-		console.log("Finished updating indices")
 		parsingMetadata = false
-		makeTable(metadata)
 		console.log("Now updating hashes")
 		let newFileList = new Array()
 		for (let i=0; i<metadata.length; i++) {
@@ -406,6 +399,7 @@ function setHash() {
 			})*/
 			parser.start()
 		} else {
+			makeTable(metadata)
 			console.log("Finished updating hashes, metadata is now:", metadata)
 			hashingFiles = false
 			store.set("metadata", metadata)
@@ -456,11 +450,20 @@ function makeTable(data) {
 
 // Load a track to the deck (used by play buttons)
 function loadTrack(e) {
-	trackid = parseInt(e.srcElement.id.substring(1))
-	document.getElementById('audiosrc').src = metadata[trackid].path
+	let trackhash = e.srcElement.id.substring(1)
+	let source = "", title = ""
+	for (let i=0;i<metadata.length;i++) {
+		if (metadata[i].hash === trackhash) {
+			source = metadata[i].path
+			title = metadata[i].title
+			break
+		}
+	}
+	if (source === "") return showTitle("Error: could not load track. No matching hash.")
+	document.getElementById('audiosrc').src = source
 	document.getElementById('audio').load()
 	document.getElementById('audio').play()
-	showTitle(metadata[trackid].title)
+	showTitle(title)
 }
 
 // Extremely hacky but seems to be only way to catch buffer boundsError...
