@@ -36,19 +36,25 @@ if (store.has("folder")) { // Trigger rescan on launch
 
 // Keyboard shortcuts
 document.getElementById("search").addEventListener('keydown', function (e) {
-	if (e.keyCode == 13) {
+	if (e.keyCode == 13) { // on Enter
 		search()
 	} else if (e.key === "Escape") {
 		if (document.getElementById("search").value.length === 0)
 			document.getElementById("search").blur()
 		document.getElementById("search").value = ""
-		makeTable(metadata)
+		if (currentlyShown.length !== metadata.length) {
+			makeTable(metadata)
+		}
 	}
 })
 document.addEventListener('keydown', function (e) {
 	if (e.key === "Escape") {
-		document.getElementById("search").value = ""
-		makeTable(metadata)
+		if (currentlyShown.length === metadata.length) {
+			document.getElementById("search").value = ""
+		} else {
+			document.getElementById("search").value = ""
+			makeTable(metadata)
+		}
 	} else if (e.key === "/") {
 		window.scrollTo(0,0)
 		document.getElementById("search").focus()
