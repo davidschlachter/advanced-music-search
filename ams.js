@@ -278,13 +278,13 @@ function getMetadata(dir) {
 					newlist.push(filelist[i])
 				}
 			}
-			filelist = newlist
-			window.filelist = JSON.parse(JSON.stringify(filelist))
+			window.newlist = JSON.parse(JSON.stringify(newlist))
+			window.filelist = JSON.parse(JSON.stringify(newlist))
 			if (filelist.length === 0) {
 				console.log("Error: no files in filelist. Stopping scan.")
 			} else {
-				console.log("Finished recursive, filelist.length:", filelist.length, "filelist", filelist)
-				parseMetadata(filelist)
+				console.log("Finished recursive, window.newlist.length:", window.newlist.length, "window.newlist", window.newlist)
+				parseMetadata()
 			}
 		}
 	})
@@ -292,9 +292,9 @@ function getMetadata(dir) {
 
 
 // Run parser on files to get metadata (recursive)
-function parseMetadata(filelist) {
+function parseMetadata() {
 	parsingMetadata = true
-	const audioFile = filelist.shift()
+	const audioFile = window.newlist.shift()
 	
 	if (audioFile) {
 		let mtime = new Date(fs.statSync(audioFile).mtime)
@@ -304,10 +304,11 @@ function parseMetadata(filelist) {
 			if (oldmetadata[i].path === audioFile) {
 				if (oldmetadata[i].mtime === JSON.parse(JSON.stringify(mtime))) {
 					metadata.push(oldmetadata[i])
-					return parseMetadata(filelist)
+					return parseMetadata()
 				}
 			}
 		}
+
 		// Otherwise,
 		let stream = fs.createReadStream(audioFile)
 		let parser = stream.pipe(new mp4dashparser())
@@ -331,7 +332,7 @@ function parseMetadata(filelist) {
 			if (!data.hasOwnProperty("albumartist")) data.albumartist = ""
 			metadata.push(data)
 			console.log("metadata.length", metadata.length, "New/updated metadata for:", audioFile)
-			return parseMetadata(filelist)
+			return parseMetadata()
 		})
 	} else {
 		console.log("Finished updating metadata, metadata is now", metadata)
@@ -347,7 +348,7 @@ function parseMetadata(filelist) {
 		for (let i=0; i<metadata.length; i++) {
 			newFileList.push(metadata[i].path)
 		}
-		window.filelist = JSON.parse(JSON.stringify(newFileList))
+		//window.filelist = JSON.parse(JSON.stringify(newFileList))
 		store.set("metadata", metadata)
 		setHash()
 	}
@@ -465,10 +466,10 @@ function loadTrack(e) {
 // Extremely hacky but seems to be only way to catch buffer boundsError...
 process.on('uncaughtException',function(error){
 	console.log("uncaughtException global handler got:", error)
-	console.log("filelist.length", filelist.length, "filelist[0]", filelist[0])
 	if (parsingMetadata) {
 		console.log("Returning to parseMetadata")
-		parseMetadata(filelist)
+		console.log("window.newlist.length", window.newlist.length, "window.newlist[0]", window.newlist[0])
+		parseMetadata()
 	} else if (hashingFiles) {
 		console.log("Returning to setHash")
 		console.log("window.filelist.length", window.filelist.length, "window.filelist[0]", window.filelist[0])
