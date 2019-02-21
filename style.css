@@ -34,6 +34,19 @@ footer {
 	width: 80%;
 	margin-bottom: 0.6em;
 }
+#splash {
+	margin: 88px auto 105.6px auto;
+	padding: 2em;
+}
+#hundredpercent {
+	width: 100%;
+	background-color:gray;
+}
+#xpercent {
+	width: 0px;
+	height: 30px;
+	background-color: green;
+}
 #listing {
 	margin:88px 0 105.6px 0; /* height+padding of footer */
 	font-size: 13px;

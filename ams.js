@@ -28,7 +28,7 @@ if (store.has("metadata")) {
 if (store.has("folder")) { // Trigger rescan on launch
 	folder = store.get("folder")
 	getMetadata(folder)
-	document.getElementById("status").innerHTML = "Loaded " + folder
+	document.getElementById("folder").textContent = folder
 } else {
 	//document.getElementById("help").innerHTML = "Drop your music folder on to this window to get started"
 }
@@ -258,7 +258,7 @@ document.addEventListener('drop', function (e) {
 	let folder = e.dataTransfer.files[0].path
 	store.set("folder", folder)
 	getMetadata(folder)
-	document.getElementById("status").innerHTML = "Loaded " + folder
+	document.getElementById("folder").textContent = folder
 })
 document.addEventListener('dragover', function (e) {
 	e.preventDefault()
@@ -273,7 +273,8 @@ function getMetadata(dir) {
 	oldmetadata = JSON.parse(JSON.stringify(metadata))
 	metadata.length = 0
 	
-	console.log("Starting recursive")
+	document.getElementById("xpercent").style.width = "1%"
+	document.getElementById("step").textContent = "listing files to scan…"
 	recursive(dir, ["*.mp3", "*.jpg", "*.itc"], function (err, filelist) {
 		if (err) console.log("Error in recursive:", err)
 		if (filelist) {
@@ -288,7 +289,8 @@ function getMetadata(dir) {
 			if (filelist.length === 0) {
 				console.log("Error: no files in filelist. Stopping scan.")
 			} else {
-				console.log("Finished recursive, window.newlist.length:", window.newlist.length, "window.newlist", window.newlist)
+				document.getElementById("xpercent").style.width = "5%"
+				document.getElementById("step").textContent = "getting metadata…"
 				parseMetadata()
 			}
 		}
@@ -300,6 +302,8 @@ function getMetadata(dir) {
 function parseMetadata() {
 	parsingMetadata = true
 	const audioFile = window.newlist.shift()
+	
+	document.getElementById("xpercent").style.width = (5 + ((window.filelist.length-window.newlist.length)/window.filelist.length)*45).toString() + "%"
 	
 	if (audioFile) {
 		let mtime = new Date(fs.statSync(audioFile).mtime)
@@ -340,9 +344,8 @@ function parseMetadata() {
 			return parseMetadata()
 		})
 	} else {
-		console.log("Finished updating metadata, metadata is now", metadata)
+		document.getElementById("step").textContent = "updating hashes…"
 		parsingMetadata = false
-		console.log("Now updating hashes")
 		let newFileList = new Array()
 		for (let i=0; i<metadata.length; i++) {
 			newFileList.push(metadata[i].path)
@@ -357,6 +360,7 @@ function parseMetadata() {
 function setHash() {
 	hashingFiles = true
 	const audioFile = window.filelist.shift()
+	document.getElementById("xpercent").style.width = (50 + ((metadata.length-window.filelist.length)/metadata.length)*45).toString() + "%"
 	try {
 		if (audioFile) {
 			let mtime = new Date(fs.statSync(audioFile).mtime)
@@ -405,6 +409,8 @@ function setHash() {
 			})*/
 			parser.start()
 		} else {
+			document.getElementById("step").textContent = "making table…"
+			document.getElementById("splash").style.display = "none"
 			makeTable(metadata)
 			console.log("Finished updating hashes, metadata is now:", metadata)
 			hashingFiles = false
