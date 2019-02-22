@@ -47,6 +47,8 @@ document.getElementById("search").addEventListener('keydown', function (e) {
 		}
 	} else if (e.key === "?") {
 		e.stopPropagation()
+	} else if (e.key === "/") {
+		e.stopPropagation()
 	}
 })
 document.addEventListener('keydown', function (e) {
@@ -62,6 +64,7 @@ document.addEventListener('keydown', function (e) {
 	} else if (e.key === "/") {
 		window.scrollTo(0,0)
 		document.getElementById("search").focus()
+		document.getElementById("search").select()
 		e.preventDefault()
 	} else if (e.key === "?") {
 		if (document.getElementById("help").style.display === "block") {
