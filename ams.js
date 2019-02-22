@@ -45,11 +45,15 @@ document.getElementById("search").addEventListener('keydown', function (e) {
 		if (currentlyShown.length !== metadata.length) {
 			makeTable(metadata)
 		}
+	} else if (e.key === "?") {
+		e.stopPropagation()
 	}
 })
 document.addEventListener('keydown', function (e) {
 	if (e.key === "Escape") {
-		if (currentlyShown.length === metadata.length) {
+		if (document.getElementById("help").style.display === "block") {
+			document.getElementById("help").style.display = "none"
+		} else if (currentlyShown.length === metadata.length) {
 			document.getElementById("search").value = ""
 		} else {
 			document.getElementById("search").value = ""
@@ -59,6 +63,12 @@ document.addEventListener('keydown', function (e) {
 		window.scrollTo(0,0)
 		document.getElementById("search").focus()
 		e.preventDefault()
+	} else if (e.key === "?") {
+		if (document.getElementById("help").style.display === "block") {
+			document.getElementById("help").style.display = "none"
+		} else {
+			document.getElementById("help").style.display = "block"
+		}
 	}
 })
 ipcRenderer.on('playpauselistener', (event, message) => {
@@ -85,6 +95,11 @@ ipcRenderer.on('nextlistener', (event, message) => {
 document.getElementById("shuffle").addEventListener('click', saveShuffleState, false)
 function saveShuffleState() {
 	store.set("shuffle", document.getElementById('shuffle').checked)
+}
+// Close shortcuts alert
+document.getElementById("closeshortcuts").addEventListener('click', closeShortcuts, false)
+function closeShortcuts() {
+	document.getElementById("help").style.display = "none"
 }
 // Next and previous buttons
 document.getElementById("next").addEventListener('click', playNextTrack, false)
@@ -307,6 +322,7 @@ document.addEventListener('drop', function (e) {
 })
 document.addEventListener('dragover', function (e) {
 	document.getElementById("dragover").style.display = "block"
+	document.getElementById("help").style.display = "none"
 	e.preventDefault()
 })
 document.addEventListener('dragleave', function (e) {

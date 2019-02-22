@@ -43,7 +43,7 @@ footer {
 	font-size: 200%;
 }
 #dragover {
-	z-index:1;
+	z-index:2;
 	pointer-events: none;
 	background-color: blue;
 	color: white;
@@ -52,6 +52,47 @@ footer {
 	position:fixed;
 	top:0;
 	left:0;
+}
+#help {
+	display:none;
+	position:fixed;
+	top:0;
+	left:0;
+	margin:3em;
+	background-color:rgba(0,0,0,0.85);
+	color:white;
+	border-radius: 2em;
+	height: calc(100vh-6em);
+	width: calc(100% - 6em);
+	z-index:1;
+	text-shadow: #000 1px 1px 7px;
+	box-shadow: 1px 1px 10px rgb(100,100,100);
+}
+#closeshortcuts {
+	text-align: right;
+	text-decoration: underline;
+	font-weight: bold;
+	padding-right: 2em;
+	user-select: none;
+	margin-bottom: 0;
+}
+#help h3 {
+	margin-top: 0;
+}
+#help table {
+	margin: 0 auto 1em;
+}
+#help table td {
+	padding: 0.3em;
+}
+.shortcut {
+	color: #dd0;
+	font-family:monospace;
+	font-weight:bold;
+	text-align: right;
+}
+.sd { /* shortcut description */
+	text-align:left;
 }
 #hundredpercent {
 	width: 100%;

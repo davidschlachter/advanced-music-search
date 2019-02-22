@@ -29,6 +29,37 @@
 			</div>
 		</div>
 		
+		<div id=help>
+			<p id=closeshortcuts>Close [X]</p>
+			<h3>Keyboard shortcuts</h3>
+			<table>
+				<tr><td class=shortcut>/</td>     <td class=sd>Focus on search bar</td></tr>
+				<tr><td class=shortcut>Escape</td><td class=sd>Clear search or unfocus search bar</td></tr>
+				<tr><td class=shortcut>?</td>     <td class=sd>Open/close this help box</td></tr>
+				<tr><td class=shortcut>'Play/pause' media key</td><td class=sd>Play/pause</td></tr>
+				<tr><td class=shortcut>'Next' media key</td><td class=sd>Go to next track</td></tr>
+			</table>
+			<h3>Search operators</h3>
+			<table>
+				<tr>
+					<td class=shortcut>key:value</td>
+					<td class=sd>Matches if key contains value. Supported keys: title, artist, albumartist, album.<br>e.g. artist:lunceford</td>
+				</tr><tr>
+					<td class=shortcut>before/after:year</td>
+					<td class=sd>e.g. after:2015</td>
+				</tr><tr>
+					<td class=shortcut>negation</td>
+					<td class=sd>e.g. -album:live, will exlude albums containing "live"</td>
+				</tr><tr>
+					<td class=shortcut>&gt;/&lt; for BPM and year</td>
+					<td class=sd>e.g. bpm&gt;200 or year&lt;2010</td>
+				</tr><tr>
+					<td class=shortcut>words</td>
+					<td class=sd>(no operators) will be matched against title, artist, albumartist, album</td>
+				</tr>
+			</table>
+		</div>
+		
 		<div id=listing></div>
 		
 		<footer>
