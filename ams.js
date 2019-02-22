@@ -115,6 +115,11 @@ function playNextTrack() {
 		document.getElementById('audio').currentTime = document.getElementById('audio').duration
 	}
 }
+// Load stylesheet specific to macOS, which hides scrollbars by default
+if (navigator.appVersion.indexOf("Mac") !== -1) {
+	console.log("Loaded macOS-specific stylesheet")
+	document.getElementsByTagName("head")[0].insertAdjacentHTML("beforeend", "<link rel=\"stylesheet\" href=\"big-table/macos-overflow.css\" />")
+}
 // Currently playing text
 function showTitle(title) {
 	document.getElementById("status").textContent = title

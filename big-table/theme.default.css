@@ -58,7 +58,8 @@
 .big-table__cell {
   float: left;
   box-sizing: border-box;
-  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: hidden;
   white-space: nowrap;
   padding: 1px 0;
   height: 100%;
