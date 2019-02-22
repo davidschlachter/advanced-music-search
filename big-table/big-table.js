@@ -357,12 +357,18 @@ window.BigTable = (function (window, BigList) {
      * @param      {Number}   i          Column index.
      * @param      {Boolean}  direction  Sort direction: true = asc, false = desc
      */
-    function sortClickHandler(i, direction) {
+    function sortClickHandler(i, direction, realClick) {
       // get current sort order
       var order = getSortOrder();
 
+      if (realClick === undefined) realClick = true
+
       if (order.column === i) {
-        order.desc = !order.desc;
+          if (realClick === true) {
+              order.desc = !order.desc;
+          } else {
+              order.desc = order.desc;
+          }
       } else {
         order.column = i;
         order.desc = direction !== undefined ? !direction : false;
@@ -420,7 +426,7 @@ window.BigTable = (function (window, BigList) {
       for (var i = 0, len = options.columns.length; i < len; i+=1) {
         sorted = options.columns[i].sorted;
         if (sorted !== undefined) {
-          sortClickHandler(i, sorted);
+          sortClickHandler(i, sorted, false);
           return;
         }
       }
